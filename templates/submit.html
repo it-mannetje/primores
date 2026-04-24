@@ -59,6 +59,20 @@
     </div>
 
     <div class="field">
+      <label for="location_name">Locatie <span class="optional">(optioneel — voor de kaart)</span></label>
+      <div class="location-row">
+        <input type="text" id="location_name" name="location_name"
+               placeholder="bijv. Amsterdam" style="flex:1">
+        <button type="button" class="btn-outline btn--small"
+                onclick="geocode('location_name','location_lat','location_lng')">📍 Zoeken</button>
+      </div>
+      <div class="location-coords">
+        <input type="number" step="any" id="location_lat" name="location_lat" placeholder="Breedtegraad">
+        <input type="number" step="any" id="location_lng" name="location_lng" placeholder="Lengtegraad">
+      </div>
+    </div>
+
+    <div class="field">
       <label for="photo">Foto <span class="optional">(optioneel, max 16 MB)</span></label>
       <div class="file-drop" id="fileDrop">
         <input type="file" id="photo" name="photo" accept="image/*" class="file-input">
@@ -79,6 +93,26 @@
 
 {% block scripts %}
 <script>
+async function geocode(nameId, latId, lngId) {
+  const name = document.getElementById(nameId).value.trim();
+  if (!name) return;
+  try {
+    const res = await fetch(
+      'https://nominatim.openstreetmap.org/search?format=json&limit=1&q='
+      + encodeURIComponent(name)
+    );
+    const data = await res.json();
+    if (data.length) {
+      document.getElementById(latId).value = parseFloat(data[0].lat).toFixed(5);
+      document.getElementById(lngId).value = parseFloat(data[0].lon).toFixed(5);
+    } else {
+      alert('Locatie niet gevonden. Probeer een andere naam.');
+    }
+  } catch {
+    alert('Kon de locatie niet ophalen. Controleer je internetverbinding.');
+  }
+}
+
 (function() {
   const input = document.getElementById('photo');
   const preview = document.getElementById('filePreview');

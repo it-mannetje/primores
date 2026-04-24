@@ -195,8 +195,11 @@ def submit(person_name):
         date_year  = request.form.get('date_year', type=int)
         date_month = request.form.get('date_month', type=int) or None
         date_day   = request.form.get('date_day', type=int) or None
-        title       = request.form.get('title', '').strip()
-        description = request.form.get('description', '').strip()
+        title         = request.form.get('title', '').strip()
+        description   = request.form.get('description', '').strip()
+        location_name = request.form.get('location_name', '').strip() or None
+        location_lat  = request.form.get('location_lat', type=float)
+        location_lng  = request.form.get('location_lng', type=float)
 
         errors = []
         if not date_year or not (1940 <= date_year <= 2030):
@@ -217,9 +220,11 @@ def submit(person_name):
 
         conn = get_db()
         conn.execute(
-            'INSERT INTO events (person_name, date_year, date_month, date_day, title, description, photo_filename, approved, is_primores) '
-            'VALUES (?,?,?,?,?,?,?,0,0)',
-            (member['name'], date_year, date_month, date_day, title, description, photo_filename)
+            'INSERT INTO events (person_name, date_year, date_month, date_day, title, description, '
+            'photo_filename, approved, is_primores, location_name, location_lat, location_lng) '
+            'VALUES (?,?,?,?,?,?,?,0,0,?,?,?)',
+            (member['name'], date_year, date_month, date_day, title, description, photo_filename,
+             location_name, location_lat, location_lng)
         )
         conn.commit()
         conn.close()
