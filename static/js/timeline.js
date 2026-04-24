@@ -171,10 +171,9 @@
     primLane.innerHTML = '';
     primoresEvs.forEach(ev => primLane.appendChild(makeCard(ev, true)));
     const primoresHidden = !visiblePersons.has('all') && !visiblePersons.has('primores');
-    primLane.style.opacity = primoresHidden ? '.15' : '1';
+    primLane.style.display = primoresHidden ? 'none' : '';
 
     // Render person lanes
-    let labelIdx = 1; // 0 = primores label
     MEMBERS.forEach((m, i) => {
       const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
       const events = byPerson[m.name];
@@ -185,14 +184,15 @@
       laneEl.innerHTML    = '';
 
       const hidden = !visiblePersons.has('all') && !visiblePersons.has(m.name);
-      laneEl.style.opacity = hidden ? '.25' : '1';
+      laneEl.style.display = hidden ? 'none' : '';
 
       events.forEach(ev => laneEl.appendChild(makeCard(ev, false)));
 
-      // Sync label height
+      // Sync label height + visibility
       const lblEls = tlLabels.querySelectorAll('.tl-label');
       if (lblEls[i + 1]) {
-        lblEls[i + 1].style.height = h + 'px';
+        lblEls[i + 1].style.height  = h + 'px';
+        lblEls[i + 1].style.display = hidden ? 'none' : '';
       }
     });
 
@@ -200,7 +200,7 @@
     const priLbl = tlLabels.querySelector('.tl-label--primores');
     if (priLbl) {
       priLbl.style.height  = primH + 'px';
-      priLbl.style.opacity = primoresHidden ? '.25' : '1';
+      priLbl.style.display = primoresHidden ? 'none' : '';
     }
 
     // Sync scroll
