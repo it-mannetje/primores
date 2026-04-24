@@ -362,6 +362,9 @@
   tlScroll.addEventListener('scroll', () => {
     tlLabels.scrollTop = tlScroll.scrollTop;
     updateScrubberViewport();
+    const centreX = tlScroll.scrollLeft + tlScroll.clientWidth / 2;
+    const year = Math.round(START_YEAR + (centreX - LEFT_PAD) / pxPerYear);
+    if (yearInput) yearInput.value = Math.max(START_YEAR, Math.min(END_YEAR, year));
   });
 
   // ── Zoom ──────────────────────────────────────────────
@@ -419,8 +422,22 @@
 
   function scrollToYear(year) {
     const x = dateToX(year, null, null);
-    tlScroll.scrollLeft = Math.max(0, x - 120);
+    tlScroll.scrollLeft = Math.max(0, x - tlScroll.clientWidth / 2);
   }
+
+  // ── Year input navigator ──────────────────────────────
+
+  const yearInput = document.getElementById('yearInput');
+  const yearGo    = document.getElementById('yearGo');
+
+  function goToInputYear() {
+    const y = parseInt(yearInput.value, 10);
+    if (y >= START_YEAR && y <= END_YEAR) scrollToYear(y);
+  }
+
+  yearGo.addEventListener('click', goToInputYear);
+  yearInput.addEventListener('keydown', e => { if (e.key === 'Enter') goToInputYear(); });
+
 
   // ── Load & init ───────────────────────────────────────
 

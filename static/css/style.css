@@ -264,7 +264,37 @@ a   { color: inherit; text-decoration: none; }
 }
 .btn-zoom:hover { background: var(--bg); }
 
-.tl-toolbar-left { display: flex; gap: .35rem; flex-shrink: 0; }
+.tl-toolbar-left { display: flex; gap: .35rem; align-items: center; flex-shrink: 0; }
+
+.tl-year-nav {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin-left: .35rem;
+}
+
+.tl-year-input {
+  width: 60px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--navy);
+  font-family: var(--sans);
+  font-size: .8rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 .3rem;
+  -moz-appearance: textfield;
+}
+.tl-year-input::-webkit-inner-spin-button,
+.tl-year-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.tl-year-input:focus {
+  outline: none;
+  border-color: var(--navy);
+}
+
+.tl-year-go { padding: 0 8px; font-size: .85rem; }
 
 /* ── Scrubber / mini-map navigator ───────────────────── */
 
