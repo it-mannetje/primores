@@ -1,0 +1,31 @@
+<div class="date-fields">
+  <div class="field">
+    <label>Jaar <span class="required">*</span></label>
+    <input type="number" name="date_year" min="1940" max="2030" placeholder="bv. 1998" required>
+  </div>
+  <div class="field">
+    <label>Maand <span class="optional">(optioneel)</span></label>
+    <select name="date_month">
+      <option value="">—</option>
+      {% for mn in ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'] %}
+      <option value="{{ loop.index }}">{{ mn }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label>Dag <span class="optional">(optioneel)</span></label>
+    <input type="number" name="date_day" min="1" max="31" placeholder="bv. 15">
+  </div>
+</div>
+<div class="field">
+  <label>Titel <span class="required">*</span></label>
+  <input type="text" name="title" maxlength="120" placeholder="Naam van het evenement" required>
+</div>
+<div class="field">
+  <label>Beschrijving <span class="optional">(optioneel)</span></label>
+  <textarea name="description" rows="4" placeholder="Wat maakte dit moment bijzonder voor de Primores?"></textarea>
+</div>
+<div class="field">
+  <label>Foto <span class="optional">(optioneel)</span></label>
+  <input type="file" name="photo" accept="image/*">
+</div>

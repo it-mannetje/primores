@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Beheer — Canon Primores{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+  <div class="admin-topbar">
+    <h1>Beheeromgeving Primores</h1>
+    <a href="{{ url_for('admin_logout') }}" class="btn-outline">Uitloggen</a>
+  </div>
+
+  <!-- ── Tabs ──────────────────────────────────────────── -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-tab="pending">
+      Wachtend op goedkeuring
+      {% if pending %}<span class="badge">{{ pending | length }}</span>{% endif %}
+    </button>
+    <button class="admin-tab" data-tab="primores">Primores evenementen</button>
+    <button class="admin-tab" data-tab="approved">Goedgekeurde bijdragen</button>
+  </div>
+
+  <!-- ── Tab: Pending ──────────────────────────────────── -->
+  <div class="admin-panel" id="tab-pending">
+    {% if pending %}
+    <div class="admin-cards">
+      {% for e in pending %}
+      {% set m = member_by_name(e.person_name) %}
+      <div class="admin-card" style="--mc: {{ m.color if m else '#888' }}">
+        <div class="admin-card-head">
+          <span class="admin-card-person">{{ e.person_name }}</span>
+          <span class="admin-card-date">ingezonden {{ e.submitted_at[:10] }}</span>
+        </div>
+        <div class="admin-card-date-ev">
+          {% if e.date_day %}{{ e.date_day }} {% endif %}
+          {% if e.date_month %}{{ ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][e.date_month - 1] }} {% endif %}
+          {{ e.date_year }}
+        </div>
+        <h3 class="admin-card-title">{{ e.title }}</h3>
+        {% if e.description %}<p class="admin-card-desc">{{ e.description | truncate(180) }}</p>{% endif %}
+        {% if e.photo_filename %}
+        <img class="admin-card-photo"
+             src="{{ url_for('uploaded_file', filename=e.photo_filename) }}" alt="">
+        {% endif %}
+        <div class="admin-card-actions">
+          <form method="POST" action="{{ url_for('admin_approve', eid=e.id) }}" style="display:inline">
+            <button class="btn-approve">✓ Goedkeuren</button>
+          </form>
+          <form method="POST" action="{{ url_for('admin_reject', eid=e.id) }}" style="display:inline"
+                onsubmit="return confirm('Bijdrage afwijzen en verwijderen?')">
+            <button class="btn-reject">✕ Afwijzen</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">Geen bijdragen wachtend op goedkeuring.</div>
+    {% endif %}
+  </div>
+
+  <!-- ── Tab: Primores evenementen ─────────────────────── -->
+  <div class="admin-panel" id="tab-primores" hidden>
+
+    <h2 class="admin-section-title">Nieuw Primores evenement toevoegen</h2>
+    <form class="admin-form" method="POST" action="{{ url_for('admin_add_primores') }}"
+          enctype="multipart/form-data">
+      {% include '_event_form_fields.html' %}
+      <button type="submit" class="btn-submit btn--gold">Evenement toevoegen</button>
+    </form>
+
+    <h2 class="admin-section-title" style="margin-top:2.5rem">Bestaande Primores evenementen</h2>
+    {% if primores_events %}
+    <div class="admin-cards">
+      {% for e in primores_events %}
+      <div class="admin-card admin-card--primores">
+        <div class="admin-card-date-ev">
+          {% if e.date_day %}{{ e.date_day }} {% endif %}
+          {% if e.date_month %}{{ ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][e.date_month - 1] }} {% endif %}
+          {{ e.date_year }}
+        </div>
+        <h3 class="admin-card-title">{{ e.title }}</h3>
+        {% if e.description %}<p class="admin-card-desc">{{ e.description | truncate(180) }}</p>{% endif %}
+        {% if e.photo_filename %}
+        <img class="admin-card-photo"
+             src="{{ url_for('uploaded_file', filename=e.photo_filename) }}" alt="">
+        {% endif %}
+        <div class="admin-card-actions">
+          <button class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">✎ Bewerken</button>
+          <form method="POST" action="{{ url_for('admin_delete', eid=e.id) }}" style="display:inline"
+                onsubmit="return confirm('Dit evenement verwijderen?')">
+            <button class="btn-reject btn--small">✕ Verwijderen</button>
+          </form>
+        </div>
+        <div class="admin-edit-form" id="edit-{{ e.id }}" hidden>
+          <form method="POST" action="{{ url_for('admin_edit_primores', eid=e.id) }}"
+                enctype="multipart/form-data">
+            <div class="date-fields">
+              <div class="field">
+                <label>Jaar</label>
+                <input type="number" name="date_year" value="{{ e.date_year }}" min="1940" max="2030" required>
+              </div>
+              <div class="field">
+                <label>Maand</label>
+                <select name="date_month">
+                  <option value="">—</option>
+                  {% for mn in ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'] %}
+                  <option value="{{ loop.index }}" {% if e.date_month == loop.index %}selected{% endif %}>{{ mn }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label>Dag</label>
+                <input type="number" name="date_day" value="{{ e.date_day or '' }}" min="1" max="31">
+              </div>
+            </div>
+            <div class="field">
+              <label>Titel</label>
+              <input type="text" name="title" value="{{ e.title }}" required>
+            </div>
+            <div class="field">
+              <label>Beschrijving</label>
+              <textarea name="description" rows="4">{{ e.description or '' }}</textarea>
+            </div>
+            <div class="field">
+              <label>Nieuwe foto (optioneel)</label>
+              <input type="file" name="photo" accept="image/*">
+            </div>
+            <button type="submit" class="btn-approve">Opslaan</button>
+            <button type="button" class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">Annuleren</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">Nog geen Primores evenementen.</div>
+    {% endif %}
+  </div>
+
+  <!-- ── Tab: Goedgekeurde bijdragen ───────────────────── -->
+  <div class="admin-panel" id="tab-approved" hidden>
+    {% if approved_events %}
+    <div class="admin-cards">
+      {% for e in approved_events %}
+      {% set m = member_by_name(e.person_name) %}
+      <div class="admin-card" style="--mc: {{ m.color if m else '#888' }}">
+        <div class="admin-card-head">
+          <span class="admin-card-person">{{ e.person_name }}</span>
+        </div>
+        <div class="admin-card-date-ev">
+          {% if e.date_day %}{{ e.date_day }} {% endif %}
+          {% if e.date_month %}{{ ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][e.date_month - 1] }} {% endif %}
+          {{ e.date_year }}
+        </div>
+        <h3 class="admin-card-title">{{ e.title }}</h3>
+        {% if e.photo_filename %}
+        <img class="admin-card-photo"
+             src="{{ url_for('uploaded_file', filename=e.photo_filename) }}" alt="">
+        {% endif %}
+        <div class="admin-card-actions">
+          <form method="POST" action="{{ url_for('admin_delete', eid=e.id) }}" style="display:inline"
+                onsubmit="return confirm('Bijdrage verwijderen?')">
+            <button class="btn-reject btn--small">✕ Verwijderen</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">Nog geen goedgekeurde bijdragen.</div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Tab switching
+document.querySelectorAll('.admin-tab').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.admin-panel').forEach(p => p.hidden = true);
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).hidden = false;
+  });
+});
+
+function toggleEdit(id) {
+  const el = document.getElementById('edit-' + id);
+  el.hidden = !el.hidden;
+}
+</script>
+{% endblock %}

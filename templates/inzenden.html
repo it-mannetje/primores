@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Inzenden — Canon Primores{% endblock %}
+
+{% block content %}
+<div class="inzenden-page">
+  <div class="inzenden-header">
+    <h1>Jouw hoogtepunten inzenden</h1>
+    <p>Kies jouw naam en voeg de momenten toe die jij wil bewaren voor de Canon van de Primores.</p>
+  </div>
+  <div class="member-grid">
+    {% for m in members %}
+    <a href="{{ url_for('submit', person_name=m.name) }}" class="member-tile" style="--mc: {{ m.color }}">
+      <div class="member-tile-avatar">{{ m.name[0] }}</div>
+      <div class="member-tile-name">{{ m.name }}</div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

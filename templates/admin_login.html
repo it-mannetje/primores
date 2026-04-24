@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Admin login — Canon Primores{% endblock %}
+
+{% block content %}
+<div class="login-page">
+  <div class="login-box">
+    <div class="login-logo">Primores</div>
+    <h2>Beheeromgeving</h2>
+    <form method="POST">
+      <div class="field">
+        <label for="password">Wachtwoord</label>
+        <input type="password" id="password" name="password" autofocus required>
+      </div>
+      <button type="submit" class="btn-submit">Inloggen</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

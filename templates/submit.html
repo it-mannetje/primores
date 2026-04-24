@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Inzenden – {{ member.name }} — Canon Primores{% endblock %}
+
+{% block content %}
+<div class="submit-page">
+  <div class="submit-header" style="--mc: {{ member.color }}">
+    <div class="submit-avatar">{{ member.name[0] }}</div>
+    <div>
+      <h1>{{ member.name }}</h1>
+      <p>Voeg een hoogtepunt toe aan jouw tijdlijn</p>
+    </div>
+  </div>
+
+  <div class="submit-nav">
+    {% for m in members %}
+    <a href="{{ url_for('submit', person_name=m.name) }}"
+       class="submit-nav-link {% if m.name == member.name %}active{% endif %}"
+       style="--mc: {{ m.color }}">{{ m.name }}</a>
+    {% endfor %}
+  </div>
+
+  <form class="submit-form" method="POST" enctype="multipart/form-data">
+
+    <fieldset class="form-group">
+      <legend>Datum</legend>
+      <div class="date-fields">
+        <div class="field">
+          <label for="date_year">Jaar <span class="required">*</span></label>
+          <input type="number" id="date_year" name="date_year"
+                 min="1940" max="2030" placeholder="bv. 1998" required>
+        </div>
+        <div class="field">
+          <label for="date_month">Maand <span class="optional">(optioneel)</span></label>
+          <select id="date_month" name="date_month">
+            <option value="">—</option>
+            {% for mn in ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'] %}
+            <option value="{{ loop.index }}">{{ mn }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="date_day">Dag <span class="optional">(optioneel)</span></label>
+          <input type="number" id="date_day" name="date_day"
+                 min="1" max="31" placeholder="bv. 15">
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="field">
+      <label for="title">Titel <span class="required">*</span></label>
+      <input type="text" id="title" name="title" maxlength="120"
+             placeholder="Korte omschrijving van het moment" required>
+    </div>
+
+    <div class="field">
+      <label for="description">Verhaal <span class="optional">(optioneel)</span></label>
+      <textarea id="description" name="description" rows="5"
+                placeholder="Beschrijf het moment. Wat maakte het bijzonder?"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="photo">Foto <span class="optional">(optioneel, max 16 MB)</span></label>
+      <div class="file-drop" id="fileDrop">
+        <input type="file" id="photo" name="photo" accept="image/*" class="file-input">
+        <div class="file-drop-inner">
+          <span class="file-drop-icon">📷</span>
+          <span class="file-drop-text">Sleep een foto hierheen of <u>klik om te kiezen</u></span>
+        </div>
+        <div class="file-preview" id="filePreview" hidden></div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit" style="background: {{ member.color }}">
+      Verstuur bijdrage
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  const input = document.getElementById('photo');
+  const preview = document.getElementById('filePreview');
+  const drop = document.getElementById('fileDrop');
+
+  input.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.innerHTML = `<img src="${e.target.result}" alt="Preview">
+          <button type="button" class="file-clear" id="fileClear">✕ Verwijderen</button>`;
+        preview.hidden = false;
+        document.querySelector('.file-drop-inner').style.display = 'none';
+        document.getElementById('fileClear').onclick = () => {
+          input.value = '';
+          preview.hidden = true;
+          preview.innerHTML = '';
+          document.querySelector('.file-drop-inner').style.display = '';
+        };
+      };
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault();
+    drop.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Canon Primores{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="{{ url_for('index') }}" class="site-logo">
+        <span class="logo-name">Primores</span>
+        <span class="logo-tag">Canon</span>
+      </a>
+      <nav class="main-nav">
+        <a href="{{ url_for('index') }}"    class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Tijdlijn</a>
+        <a href="{{ url_for('overzicht') }}" class="nav-link {% if request.endpoint == 'overzicht' %}active{% endif %}">Overzicht</a>
+        <a href="{{ url_for('inzenden') }}"  class="nav-link {% if request.endpoint in ['inzenden','submit'] %}active{% endif %}">Inzenden</a>
+      </nav>
+    </div>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-bar">
+        {% for cat, msg in messages %}
+          <div class="flash flash--{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

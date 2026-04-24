@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Tijdlijn — Canon Primores{% endblock %}
+
+{% block content %}
+<div class="timeline-page">
+
+  <div class="tl-toolbar">
+    <div class="tl-toolbar-left">
+      <button class="btn-zoom" id="zoomIn"  title="Inzoomen">+</button>
+      <button class="btn-zoom" id="zoomOut" title="Uitzoomen">−</button>
+      <button class="btn-zoom" id="zoomReset" title="Reset zoom" style="font-size:12px;padding:0 10px;">⟳</button>
+    </div>
+    <div class="tl-filters" id="personFilters">
+      <button class="filter-btn active" data-person="all">Alle heren</button>
+      <button class="filter-btn filter-btn--primores" data-person="primores">Primores</button>
+      {% for m in members %}
+      <button class="filter-btn" data-person="{{ m.name }}" style="--mc: {{ m.color }}">{{ m.name }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tl-layout" id="tlLayout">
+    <!-- Sticky lane labels (left column) -->
+    <div class="tl-labels" id="tlLabels">
+      <div class="tl-label tl-label--primores">
+        <div class="tl-label-inner">Primores</div>
+      </div>
+      {% for m in members %}
+      <div class="tl-label" data-person="{{ m.name }}" style="--mc: {{ m.color }}">
+        <div class="tl-label-inner">{{ m.name }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Scrollable timeline area -->
+    <div class="tl-scroll" id="tlScroll">
+      <!-- Year ruler (sticky top) -->
+      <div class="tl-ruler" id="tlRuler"></div>
+
+      <!-- Canvas: lanes rendered by JS -->
+      <div class="tl-canvas" id="tlCanvas">
+        <div class="tl-lane tl-lane--primores" id="lane-Primores"></div>
+        {% for m in members %}
+        <div class="tl-lane" id="lane-{{ m.name | replace(' ', '_') }}" style="--mc: {{ m.color }}"></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Event detail modal -->
+<div class="modal-overlay" id="eventModal" hidden aria-modal="true" role="dialog">
+  <div class="modal-box" id="modalBox">
+    <button class="modal-close" id="modalClose" aria-label="Sluiten">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>const MEMBERS = {{ members | tojson }};</script>
+<script src="{{ url_for('static', filename='js/timeline.js') }}"></script>
+{% endblock %}
