@@ -147,7 +147,7 @@ def api_events():
     conn.close()
     result = []
     for e in events:
-        color = '#c9a227'
+        color = '#B91C1C'
         if e['person_name']:
             m = member_by_name(e['person_name'])
             if m:

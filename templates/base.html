@@ -13,8 +13,11 @@
   <header class="site-header">
     <div class="header-inner">
       <a href="{{ url_for('index') }}" class="site-logo">
-        <span class="logo-name">Primores</span>
-        <span class="logo-tag">Canon</span>
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Primores" class="logo-img">
+        <div class="logo-text">
+          <span class="logo-name">Primores</span>
+          <span class="logo-tag">Canon · Factum Non Fabula</span>
+        </div>
       </a>
       <nav class="main-nav">
         <a href="{{ url_for('index') }}"    class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Tijdlijn</a>
