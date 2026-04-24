@@ -119,8 +119,8 @@ a   { color: inherit; text-decoration: none; }
 
 .nav-link:hover,
 .nav-link.active {
-  color: var(--gold);
-  background: rgba(201,162,39,.1);
+  color: #eaeaea;
+  background: rgba(234,234,234,.12);
 }
 
 /* ── Flash messages ──────────────────────────────────── */
@@ -287,7 +287,7 @@ a   { color: inherit; text-decoration: none; }
 }
 
 .tl-label--primores .tl-label-inner {
-  color: var(--gold);
+  color: #eaeaea;
   font-family: var(--serif);
   font-size: .9rem;
   text-transform: none;
