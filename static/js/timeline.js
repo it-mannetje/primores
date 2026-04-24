@@ -9,9 +9,9 @@
   const END_YEAR     = 2027;
   const CARD_W       = 152;
   const CARD_GAP     = 6;
-  const LANE_H_P     = 160;   // Primores lane height
-  const LANE_H       = 130;   // person lane height
-  const ROW_H        = 116;   // height per event row within a lane
+  const LANE_H_P     = 200;   // Primores lane height
+  const LANE_H       = 165;   // person lane height
+  const ROW_H        = 155;   // height per event row within a lane
   const RULER_H      = 36;
   const LEFT_PAD     = 16;
 
