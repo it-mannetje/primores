@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+
+{% block title %}Kaart — Canon Primores{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  .kaart-wrap {
+    display: flex;
+    height: calc(100vh - var(--header-h));
+  }
+
+  /* ── sidebar ── */
+  .kaart-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .kaart-sidebar-head {
+    padding: 1rem 1.1rem .6rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .kaart-sidebar-head h2 {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    color: var(--navy);
+    margin-bottom: .35rem;
+  }
+
+  .kaart-filter {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+  }
+
+  .kaart-filter-btn {
+    font-family: var(--sans);
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .2rem .55rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .kaart-filter-btn.active,
+  .kaart-filter-btn:hover {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: #fff;
+  }
+
+  .kaart-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: .5rem 0;
+  }
+
+  .kaart-item {
+    padding: .55rem 1.1rem;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background .12s, border-color .12s;
+    display: flex;
+    gap: .6rem;
+    align-items: flex-start;
+  }
+
+  .kaart-item:hover,
+  .kaart-item.selected {
+    background: var(--bg);
+  }
+
+  .kaart-item.selected { border-left-color: var(--navy); }
+
+  .kaart-item-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: .3rem;
+    flex-shrink: 0;
+  }
+
+  .kaart-item-text strong {
+    display: block;
+    font-family: var(--sans);
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .kaart-item-text span {
+    font-family: var(--sans);
+    font-size: .7rem;
+    color: var(--text-light);
+  }
+
+  /* ── map ── */
+  #map {
+    flex: 1;
+    z-index: 0;
+  }
+
+  /* Leaflet popup styling */
+  .leaflet-popup-content-wrapper {
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow-md) !important;
+    font-family: var(--sans) !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+
+  .leaflet-popup-content {
+    margin: 0 !important;
+    width: 220px !important;
+  }
+
+  .map-popup {
+    padding: .8rem .9rem;
+  }
+
+  .map-popup-year {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: .15rem;
+  }
+
+  .map-popup-title {
+    font-family: var(--serif);
+    font-size: .95rem;
+    color: var(--text);
+    margin-bottom: .3rem;
+    line-height: 1.3;
+  }
+
+  .map-popup-location {
+    font-size: .72rem;
+    color: var(--text-light);
+    margin-bottom: .4rem;
+  }
+
+  .map-popup-desc {
+    font-size: .75rem;
+    color: var(--text-mid);
+    line-height: 1.5;
+    max-height: 80px;
+    overflow: hidden;
+  }
+
+  .map-no-loc {
+    padding: 2rem 1.1rem;
+    font-family: var(--sans);
+    font-size: .8rem;
+    color: var(--text-light);
+    text-align: center;
+    display: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kaart-wrap">
+  <aside class="kaart-sidebar">
+    <div class="kaart-sidebar-head">
+      <h2>Evenementen op de kaart</h2>
+      <div class="kaart-filter">
+        <button class="kaart-filter-btn active" data-filter="all">Alles</button>
+        <button class="kaart-filter-btn" data-filter="primores">Primores</button>
+        <button class="kaart-filter-btn" data-filter="members">Leden</button>
+      </div>
+    </div>
+    <div class="kaart-list" id="kaartList"></div>
+  </aside>
+  <div id="map"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  const map = L.map('map', { zoomControl: true }).setView([52.15, 5.10], 8);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(map);
+
+  const list   = document.getElementById('kaartList');
+  const markers = [];
+  let   activeFilter = 'all';
+  let   selectedIdx  = null;
+
+  function makeMarker(ev, idx) {
+    const color = ev.is_primores ? '#B91C1C' : ev.color;
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:32px; height:32px; border-radius:50%;
+        background:${color}; border:3px solid #fff;
+        box-shadow:0 2px 6px rgba(0,0,0,.35);
+        display:flex; align-items:center; justify-content:center;
+        font-family:sans-serif; font-size:9px; font-weight:700;
+        color:#fff; line-height:1; text-align:center;
+        cursor:pointer;
+      ">${ev.date_year}</div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -18],
+    });
+
+    const m = L.marker([ev.location_lat, ev.location_lng], { icon });
+
+    const month = ev.date_month
+      ? ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][ev.date_month - 1] + ' '
+      : '';
+    const descSnippet = ev.description
+      ? ev.description.replace(/\n/g, ' ').substring(0, 120) + (ev.description.length > 120 ? '…' : '')
+      : '';
+
+    m.bindPopup(`
+      <div class="map-popup">
+        <div class="map-popup-year">${month}${ev.date_year}</div>
+        <div class="map-popup-title">${ev.title}</div>
+        <div class="map-popup-location">📍 ${ev.location_name}</div>
+        ${descSnippet ? `<div class="map-popup-desc">${descSnippet}</div>` : ''}
+      </div>
+    `, { maxWidth: 240 });
+
+    m.on('click', () => selectItem(idx));
+    return m;
+  }
+
+  function makeListItem(ev, idx) {
+    const color = ev.is_primores ? '#B91C1C' : ev.color;
+    const li = document.createElement('div');
+    li.className = 'kaart-item';
+    li.dataset.idx = idx;
+    li.innerHTML = `
+      <div class="kaart-item-dot" style="background:${color}"></div>
+      <div class="kaart-item-text">
+        <strong>${ev.title}</strong>
+        <span>${ev.location_name} · ${ev.date_year}</span>
+      </div>`;
+    li.addEventListener('click', () => selectItem(idx));
+    return li;
+  }
+
+  function selectItem(idx) {
+    // deselect previous
+    if (selectedIdx !== null) {
+      const prev = list.querySelector(`[data-idx="${selectedIdx}"]`);
+      if (prev) prev.classList.remove('selected');
+    }
+    selectedIdx = idx;
+    const el = list.querySelector(`[data-idx="${idx}"]`);
+    if (el) {
+      el.classList.add('selected');
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    const { marker } = markers[idx];
+    map.setView(marker.getLatLng(), Math.max(map.getZoom(), 11), { animate: true });
+    marker.openPopup();
+  }
+
+  function applyFilter(filter) {
+    activeFilter = filter;
+    document.querySelectorAll('.kaart-filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === filter);
+    });
+    let count = 0;
+    markers.forEach(({ marker, ev }, idx) => {
+      const show = filter === 'all'
+        || (filter === 'primores' && ev.is_primores)
+        || (filter === 'members' && !ev.is_primores);
+      const li = list.querySelector(`[data-idx="${idx}"]`);
+      if (show) {
+        marker.addTo(map);
+        if (li) li.style.display = '';
+        count++;
+      } else {
+        marker.remove();
+        if (li) li.style.display = 'none';
+      }
+    });
+    const noLoc = list.querySelector('.map-no-loc');
+    if (noLoc) noLoc.style.display = count === 0 ? 'block' : 'none';
+  }
+
+  fetch('/api/events')
+    .then(r => r.json())
+    .then(events => {
+      const located = events.filter(e => e.location_lat != null && e.location_lng != null);
+      located.sort((a, b) => a.date_year - b.date_year || (a.date_month || 0) - (b.date_month || 0));
+
+      if (located.length === 0) {
+        list.innerHTML = '<div class="map-no-loc" style="display:block">Geen evenementen met locatiedata gevonden.</div>';
+        return;
+      }
+
+      const noLoc = document.createElement('div');
+      noLoc.className = 'map-no-loc';
+      noLoc.textContent = 'Geen evenementen in deze categorie.';
+      list.appendChild(noLoc);
+
+      located.forEach((ev, idx) => {
+        const marker = makeMarker(ev, idx);
+        markers.push({ marker, ev });
+        marker.addTo(map);
+        list.insertBefore(makeListItem(ev, idx), noLoc);
+      });
+
+      // fit map to all markers
+      const group = L.featureGroup(markers.map(m => m.marker));
+      map.fitBounds(group.getBounds().pad(0.15));
+
+      document.querySelectorAll('.kaart-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+      });
+    });
+})();
+</script>
+{% endblock %}

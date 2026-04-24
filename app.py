@@ -60,6 +60,11 @@ def init_db():
             is_primores   INTEGER DEFAULT 0
         );
     ''')
+    for col_def in ['location_name TEXT', 'location_lat REAL', 'location_lng REAL']:
+        try:
+            conn.execute(f'ALTER TABLE events ADD COLUMN {col_def}')
+        except Exception:
+            pass
     conn.commit()
     conn.close()
 
@@ -163,8 +168,16 @@ def api_events():
             'description': e['description'] or '',
             'photo_url': url_for('uploaded_file', filename=e['photo_filename']) if e['photo_filename'] else None,
             'color': color,
+            'location_name': e['location_name'],
+            'location_lat':  e['location_lat'],
+            'location_lng':  e['location_lng'],
         })
     return jsonify(result)
+
+
+@app.route('/kaart')
+def kaart():
+    return render_template('kaart.html', members=MEMBERS)
 
 
 @app.route('/inzenden')
@@ -361,6 +374,7 @@ def _upsert_event(person_name, is_primores):
 
 if __name__ == '__main__':
     init_db()
-    from seed_data import seed
+    from seed_data import seed, seed_locations
     seed(DB_PATH)
+    seed_locations(DB_PATH)
     app.run(debug=True, host='0.0.0.0', port=5001)

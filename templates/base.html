@@ -22,6 +22,7 @@
       <nav class="main-nav">
         <a href="{{ url_for('index') }}"    class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Tijdlijn</a>
         <a href="{{ url_for('overzicht') }}" class="nav-link {% if request.endpoint == 'overzicht' %}active{% endif %}">Overzicht</a>
+        <a href="{{ url_for('kaart') }}"     class="nav-link {% if request.endpoint == 'kaart' %}active{% endif %}">Kaart</a>
         <a href="{{ url_for('inzenden') }}"  class="nav-link {% if request.endpoint in ['inzenden','submit'] %}active{% endif %}">Inzenden</a>
       </nav>
     </div>

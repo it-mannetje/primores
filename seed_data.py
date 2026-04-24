@@ -68,6 +68,48 @@ PRIMORES_EVENTS = [
 ]
 
 
+# (year, month) → (city label, lat, lng)
+LOCATION_DATA = {
+    (1993, 12): ('Ockenburgh, Den Haag',  52.045, 4.222),
+    (1994, 12): ('Den Haag',              52.070, 4.300),
+    (1995, 12): ('Den Haag',              52.070, 4.300),
+    (1997, 12): ('Den Haag',              52.070, 4.300),
+    (1998, 12): ('Den Haag',              52.070, 4.300),
+    (1999, 12): ('Den Haag',              52.070, 4.300),
+    (2000, 12): ('Den Haag',              52.070, 4.300),
+    (2001, 12): ('Antwerpen',             51.219, 4.402),
+    (2002, 12): ('Den Haag',              52.074, 4.302),
+    (2004, 12): ('Haarlem',               52.387, 4.646),
+    (2006, 12): ('Holten',                52.280, 6.424),
+    (2007, 12): ('Rockanje',              51.872, 4.058),
+    (2008, 12): ('Oosterbeek',            51.987, 5.840),
+    (2009, 12): ('Noordarheide',          52.248, 5.226),
+    (2011, 12): ('Noordarheide',          52.248, 5.226),
+    (2012, 12): ('Scheveningen',          52.111, 4.274),
+    (2013, 12): ('Noordarheide',          52.248, 5.226),
+    (2014, 12): ('Leiden',                52.160, 4.497),
+    (2015, 12): ('Rotterdam',             51.922, 4.479),
+    (2016, 12): ('Amsterdam',             52.368, 4.904),
+    (2017, 12): ('Baambrugge',            52.213, 4.988),
+    (2019, 1):  ('Den Haag',              52.070, 4.300),
+    (2019, 12): ('Haarlem',               52.387, 4.646),
+}
+
+
+def seed_locations(db_path):
+    """Fill in lat/lng for known Primores events. Safe to run on every startup."""
+    conn = sqlite3.connect(db_path)
+    for (year, month), (name, lat, lng) in LOCATION_DATA.items():
+        conn.execute(
+            'UPDATE events SET location_name=?, location_lat=?, location_lng=? '
+            'WHERE is_primores=1 AND date_year=? AND date_month=? '
+            '  AND (location_lat IS NULL OR location_lat="")',
+            (name, lat, lng, year, month)
+        )
+    conn.commit()
+    conn.close()
+
+
 def seed(db_path):
     conn = sqlite3.connect(db_path)
     count = conn.execute('SELECT COUNT(*) FROM events WHERE is_primores=1').fetchone()[0]

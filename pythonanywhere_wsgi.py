@@ -9,7 +9,8 @@ os.environ.setdefault('SECRET_KEY', 'primores-canon-2024-xK9mP3r!')
 os.environ.setdefault('ADMIN_PASSWORD', 'primores2024')
 
 from app import app as application, init_db, DB_PATH
-from seed_data import seed
+from seed_data import seed, seed_locations
 
 init_db()
 seed(DB_PATH)
+seed_locations(DB_PATH)
