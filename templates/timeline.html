@@ -10,10 +10,11 @@
       <button class="btn-zoom" id="zoomOut" title="Uitzoomen">−</button>
       <button class="btn-zoom" id="zoomReset" title="Reset zoom" style="font-size:12px;padding:0 10px;">⟳</button>
       <div class="tl-year-nav">
-        <input type="number" id="yearInput" class="tl-year-input"
-               min="1975" max="2027" step="1" placeholder="jaar"
-               title="Navigeer naar jaar">
-        <button class="btn-zoom tl-year-go" id="yearGo" title="Ga naar jaar">→</button>
+        <button class="tl-year-arrow" id="yearPrev" title="Oudere jaren">&#8249;</button>
+        <div class="tl-year-strip-wrap" id="yearStripWrap">
+          <div class="tl-year-strip" id="yearStrip"></div>
+        </div>
+        <button class="tl-year-arrow" id="yearNext" title="Nieuwere jaren">&#8250;</button>
       </div>
     </div>
   </div>

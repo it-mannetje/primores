@@ -364,7 +364,7 @@
     updateScrubberViewport();
     const centreX = tlScroll.scrollLeft + tlScroll.clientWidth / 2;
     const year = Math.round(START_YEAR + (centreX - LEFT_PAD) / pxPerYear);
-    if (yearInput) yearInput.value = Math.max(START_YEAR, Math.min(END_YEAR, year));
+    updateActiveYear(Math.max(START_YEAR, Math.min(END_YEAR, year)));
   });
 
   // ── Zoom ──────────────────────────────────────────────
@@ -425,18 +425,67 @@
     tlScroll.scrollLeft = Math.max(0, x - tlScroll.clientWidth / 2);
   }
 
-  // ── Year input navigator ──────────────────────────────
+  // ── Year strip navigator ──────────────────────────────
 
-  const yearInput = document.getElementById('yearInput');
-  const yearGo    = document.getElementById('yearGo');
+  const yearStripWrap = document.getElementById('yearStripWrap');
+  const yearStrip     = document.getElementById('yearStrip');
+  const yearPrev      = document.getElementById('yearPrev');
+  const yearNext      = document.getElementById('yearNext');
+  let   yearOffset    = 0;
+  let   activeYear    = null;
 
-  function goToInputYear() {
-    const y = parseInt(yearInput.value, 10);
-    if (y >= START_YEAR && y <= END_YEAR) scrollToYear(y);
+  function buildYearStrip() {
+    yearStrip.innerHTML = '';
+    for (let y = START_YEAR; y <= END_YEAR; y++) {
+      const btn = document.createElement('button');
+      btn.className = 'tl-year-btn';
+      btn.dataset.year = y;
+      btn.textContent = y;
+      btn.addEventListener('click', () => scrollToYear(y));
+      yearStrip.appendChild(btn);
+    }
+    yearOffset = 0;
+    yearStrip.style.transform = 'translateX(0)';
+    updateYearArrows();
   }
 
-  yearGo.addEventListener('click', goToInputYear);
-  yearInput.addEventListener('keydown', e => { if (e.key === 'Enter') goToInputYear(); });
+  function updateActiveYear(year) {
+    if (year === activeYear) return;
+    activeYear = year;
+    yearStrip.querySelectorAll('.tl-year-btn').forEach(btn => {
+      btn.classList.toggle('active', +btn.dataset.year === year);
+    });
+    // Scroll strip so the active button is centred in the wrap
+    const activeBtn = yearStrip.querySelector('.tl-year-btn.active');
+    if (!activeBtn) return;
+    const wrapW  = yearStripWrap.clientWidth;
+    const target = -(activeBtn.offsetLeft - wrapW / 2 + activeBtn.offsetWidth / 2);
+    const minOff = Math.min(0, -(yearStrip.scrollWidth - wrapW));
+    yearOffset   = Math.max(minOff, Math.min(0, target));
+    yearStrip.style.transform = `translateX(${yearOffset}px)`;
+    updateYearArrows();
+  }
+
+  function updateYearArrows() {
+    const minOff = Math.min(0, -(yearStrip.scrollWidth - yearStripWrap.clientWidth));
+    yearPrev.disabled = yearOffset >= 0;
+    yearNext.disabled = yearOffset <= minOff;
+  }
+
+  yearPrev.addEventListener('click', () => {
+    yearOffset = Math.min(0, yearOffset + yearStripWrap.clientWidth * 0.6);
+    yearStrip.style.transform = `translateX(${yearOffset}px)`;
+    updateYearArrows();
+  });
+
+  yearNext.addEventListener('click', () => {
+    const minOff = Math.min(0, -(yearStrip.scrollWidth - yearStripWrap.clientWidth));
+    yearOffset = Math.max(minOff, yearOffset - yearStripWrap.clientWidth * 0.6);
+    yearStrip.style.transform = `translateX(${yearOffset}px)`;
+    updateYearArrows();
+  });
+
+  buildYearStrip();
 
 
   // ── Load & init ───────────────────────────────────────
