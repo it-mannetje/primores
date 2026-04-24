@@ -216,6 +216,13 @@
   </aside>
   <div id="map"></div>
 </div>
+
+<div class="modal-overlay" id="eventModal" hidden aria-modal="true" role="dialog">
+  <div class="modal-box" id="modalBox">
+    <button class="modal-close" id="modalClose" aria-label="Sluiten">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -254,26 +261,7 @@
 
     const m = L.marker([ev.location_lat, ev.location_lng], { icon });
 
-    const month = ev.date_month
-      ? ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][ev.date_month - 1] + ' '
-      : '';
-    const descSnippet = ev.description
-      ? ev.description.replace(/\n/g, ' ').substring(0, 120) + (ev.description.length > 120 ? '…' : '')
-      : '';
-
-    m.bindPopup(`
-      <div class="map-popup">
-        ${ev.photo_url ? `<img class="map-popup-img" src="${ev.photo_url}" alt="">` : ''}
-        <div style="padding:.8rem .9rem 0">
-          <div class="map-popup-year">${month}${ev.date_year}</div>
-          <div class="map-popup-title">${ev.title}</div>
-          <div class="map-popup-location">📍 ${ev.location_name}</div>
-          ${descSnippet ? `<div class="map-popup-desc">${descSnippet}</div>` : ''}
-        </div>
-      </div>
-    `, { maxWidth: 260 });
-
-    m.on('click', () => selectItem(idx));
+    m.on('click', () => { selectItem(idx); showModal(ev); });
     return m;
   }
 
@@ -304,9 +292,9 @@
       el.classList.add('selected');
       el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
-    const { marker } = markers[idx];
+    const { marker, ev } = markers[idx];
     map.setView(marker.getLatLng(), Math.max(map.getZoom(), 11), { animate: true });
-    marker.openPopup();
+    showModal(ev);
   }
 
   function applyFilter(filter) {
@@ -332,6 +320,35 @@
     const noLoc = list.querySelector('.map-no-loc');
     if (noLoc) noLoc.style.display = count === 0 ? 'block' : 'none';
   }
+
+  const modal      = document.getElementById('eventModal');
+  const modalContent = document.getElementById('modalContent');
+  const modalClose   = document.getElementById('modalClose');
+  const MONTHS_LONG = ['januari','februari','maart','april','mei','juni',
+                       'juli','augustus','september','oktober','november','december'];
+
+  function showModal(ev) {
+    let dateStr = String(ev.date_year);
+    if (ev.date_month) dateStr = MONTHS_LONG[ev.date_month - 1] + ' ' + dateStr;
+    if (ev.date_day)   dateStr = ev.date_day + ' ' + dateStr;
+    const personName = ev.person_name || 'Primores';
+    modalContent.innerHTML = `
+      <div class="modal-person" style="color:${ev.color}">${personName}</div>
+      <h2 class="modal-title">${ev.title}</h2>
+      <div class="modal-date">${dateStr}</div>
+      ${ev.photo_url ? `<img class="modal-photo" src="${ev.photo_url}" alt="${ev.title}">` : ''}
+      ${ev.description ? `<p class="modal-desc">${ev.description.replace(/\n/g,'<br>')}</p>` : ''}
+      ${ev.url ? `<a class="modal-url" href="${ev.url}" target="_blank" rel="noopener noreferrer">🔗 Meer informatie</a>` : ''}
+    `;
+    modal.hidden = false;
+    modalClose.focus();
+  }
+
+  function closeModal() { modal.hidden = true; }
+
+  modalClose.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
   fetch('/api/events')
     .then(r => r.json())

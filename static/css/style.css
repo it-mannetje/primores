@@ -266,6 +266,67 @@ a   { color: inherit; text-decoration: none; }
 
 .tl-toolbar-left { display: flex; gap: .35rem; flex-shrink: 0; }
 
+/* ── Scrubber / mini-map navigator ───────────────────── */
+
+.tl-scrubber {
+  position: relative;
+  height: 40px;
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+  cursor: crosshair;
+  overflow: hidden;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.tl-scrub-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 7px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+
+.tl-scrub-tick--decade {
+  height: 13px;
+  background: var(--text-light);
+}
+
+.tl-scrub-label {
+  position: absolute;
+  top: 3px;
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-light);
+  transform: translateX(-50%);
+  letter-spacing: .05em;
+  pointer-events: none;
+}
+
+.tl-scrub-dot {
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: .75;
+  pointer-events: none;
+}
+
+.tl-scrub-viewport {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(30, 58, 95, .10);
+  border-left: 2px solid var(--navy);
+  border-right: 2px solid var(--navy);
+  pointer-events: none;
+  transition: left .05s, width .05s;
+}
+
 .tl-filters {
   display: flex;
   gap: .35rem;

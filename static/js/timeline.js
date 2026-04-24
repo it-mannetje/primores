@@ -29,6 +29,7 @@
   const tlLabels  = document.getElementById('tlLabels');
   const tlRuler   = document.getElementById('tlRuler');
   const tlCanvas  = document.getElementById('tlCanvas');
+  const tlScrubber   = document.getElementById('tlScrubber');
   const modal     = document.getElementById('eventModal');
   const modalContent = document.getElementById('modalContent');
   const modalClose   = document.getElementById('modalClose');
@@ -208,6 +209,7 @@
 
     // Sync scroll
     syncLabelScroll();
+    buildScrubber();
   }
 
   function sortByDate(a, b) {
@@ -262,6 +264,95 @@
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+  // ── Scrubber / mini-map navigator ────────────────────
+
+  function buildScrubber() {
+    const W = tlScrubber.clientWidth;
+    if (W === 0) return;
+    const tW = totalWidth();
+
+    tlScrubber.innerHTML = '';
+
+    // Decade / 5-year ticks + labels
+    for (let y = START_YEAR; y <= END_YEAR; y++) {
+      if (y % 5 !== 0) continue;
+      const x = dateToX(y, null, null) / tW * W;
+      const isDec = y % 10 === 0;
+
+      const tick = document.createElement('div');
+      tick.className = 'tl-scrub-tick' + (isDec ? ' tl-scrub-tick--decade' : '');
+      tick.style.left = x + 'px';
+      tlScrubber.appendChild(tick);
+
+      if (isDec || (y % 5 === 0 && pxPerYear >= 80)) {
+        const lbl = document.createElement('span');
+        lbl.className = 'tl-scrub-label';
+        lbl.style.left = x + 'px';
+        lbl.textContent = y;
+        tlScrubber.appendChild(lbl);
+      }
+    }
+
+    // Event dots — one dot per event, colored by person
+    allEvents.forEach(ev => {
+      const x = dateToX(ev.date_year, ev.date_month, ev.date_day) / tW * W;
+      const dot = document.createElement('div');
+      dot.className = 'tl-scrub-dot';
+      dot.style.left = x + 'px';
+      dot.style.background = ev.is_primores ? '#B91C1C' : ev.color;
+      tlScrubber.appendChild(dot);
+    });
+
+    // Viewport indicator (added last so it sits on top)
+    const vp = document.createElement('div');
+    vp.className = 'tl-scrub-viewport';
+    tlScrubber.appendChild(vp);
+    updateScrubberViewport();
+  }
+
+  function updateScrubberViewport() {
+    const vp = tlScrubber.querySelector('.tl-scrub-viewport');
+    if (!vp) return;
+    const W  = tlScrubber.clientWidth;
+    const tW = totalWidth();
+    const left  = tlScroll.scrollLeft / tW * W;
+    const width = Math.min(tlScroll.clientWidth / tW * W, W);
+    vp.style.left  = left + 'px';
+    vp.style.width = width + 'px';
+  }
+
+  // Click or drag to navigate
+  (function () {
+    let dragging = false;
+
+    function scrubTo(clientX) {
+      const rect  = tlScrubber.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      tlScroll.scrollLeft = ratio * totalWidth() - tlScroll.clientWidth / 2;
+    }
+
+    tlScrubber.addEventListener('mousedown', e => {
+      dragging = true;
+      scrubTo(e.clientX);
+    });
+    document.addEventListener('mousemove', e => {
+      if (dragging) scrubTo(e.clientX);
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
+
+    // Touch support
+    tlScrubber.addEventListener('touchstart', e => {
+      dragging = true;
+      scrubTo(e.touches[0].clientX);
+    }, { passive: true });
+    document.addEventListener('touchmove', e => {
+      if (dragging) scrubTo(e.touches[0].clientX);
+    }, { passive: true });
+    document.addEventListener('touchend', () => { dragging = false; });
+  })();
+
+  window.addEventListener('resize', () => { buildScrubber(); });
+
   // ── Scroll sync (labels ↔ timeline) ───────────────────
 
   function syncLabelScroll() {
@@ -270,6 +361,7 @@
 
   tlScroll.addEventListener('scroll', () => {
     tlLabels.scrollTop = tlScroll.scrollTop;
+    updateScrubberViewport();
   });
 
   // ── Zoom ──────────────────────────────────────────────
