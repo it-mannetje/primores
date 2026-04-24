@@ -310,6 +310,41 @@ def _delete_event(eid):
     conn.close()
 
 
+@app.route('/admin/approved/edit/<int:eid>', methods=['POST'])
+@require_admin
+def admin_edit_approved(eid):
+    conn = get_db()
+    old = conn.execute('SELECT * FROM events WHERE id=?', (eid,)).fetchone()
+    conn.close()
+
+    date_year     = request.form.get('date_year', type=int)
+    date_month    = request.form.get('date_month', type=int) or None
+    date_day      = request.form.get('date_day', type=int) or None
+    title         = request.form.get('title', '').strip()
+    description   = request.form.get('description', '').strip()
+    location_name = request.form.get('location_name', '').strip() or None
+    location_lat  = request.form.get('location_lat', type=float)
+    location_lng  = request.form.get('location_lng', type=float)
+
+    photo_filename = old['photo_filename'] if old else None
+    new_photo = save_photo('photo')
+    if new_photo:
+        delete_photo(photo_filename)
+        photo_filename = new_photo
+
+    conn = get_db()
+    conn.execute(
+        'UPDATE events SET date_year=?, date_month=?, date_day=?, title=?, description=?, '
+        'photo_filename=?, location_name=?, location_lat=?, location_lng=? WHERE id=?',
+        (date_year, date_month, date_day, title, description, photo_filename,
+         location_name, location_lat, location_lng, eid)
+    )
+    conn.commit()
+    conn.close()
+    flash('Bijdrage bijgewerkt.', 'success')
+    return redirect(url_for('admin') + '?tab=approved')
+
+
 @app.route('/admin/primores/add', methods=['POST'])
 @require_admin
 def admin_add_primores():

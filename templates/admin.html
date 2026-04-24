@@ -175,6 +175,7 @@
       <div class="admin-card" style="--mc: {{ m.color if m else '#888' }}">
         <div class="admin-card-head">
           <span class="admin-card-person">{{ e.person_name }}</span>
+          <span class="admin-card-date">{{ e.date_year }}</span>
         </div>
         <div class="admin-card-date-ev">
           {% if e.date_day %}{{ e.date_day }} {% endif %}
@@ -182,14 +183,69 @@
           {{ e.date_year }}
         </div>
         <h3 class="admin-card-title">{{ e.title }}</h3>
+        {% if e.description %}<p class="admin-card-desc">{{ e.description | truncate(180) }}</p>{% endif %}
         {% if e.photo_filename %}
         <img class="admin-card-photo"
              src="{{ url_for('uploaded_file', filename=e.photo_filename) }}" alt="">
         {% endif %}
         <div class="admin-card-actions">
+          <button class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">✎ Bewerken</button>
           <form method="POST" action="{{ url_for('admin_delete', eid=e.id) }}" style="display:inline"
                 onsubmit="return confirm('Bijdrage verwijderen?')">
             <button class="btn-reject btn--small">✕ Verwijderen</button>
+          </form>
+        </div>
+        <div class="admin-edit-form" id="edit-{{ e.id }}" hidden>
+          <form method="POST" action="{{ url_for('admin_edit_approved', eid=e.id) }}"
+                enctype="multipart/form-data">
+            <div class="date-fields">
+              <div class="field">
+                <label>Jaar</label>
+                <input type="number" name="date_year" value="{{ e.date_year }}" min="1940" max="2030" required>
+              </div>
+              <div class="field">
+                <label>Maand</label>
+                <select name="date_month">
+                  <option value="">—</option>
+                  {% for mn in ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'] %}
+                  <option value="{{ loop.index }}" {% if e.date_month == loop.index %}selected{% endif %}>{{ mn }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label>Dag</label>
+                <input type="number" name="date_day" value="{{ e.date_day or '' }}" min="1" max="31">
+              </div>
+            </div>
+            <div class="field">
+              <label>Titel</label>
+              <input type="text" name="title" value="{{ e.title }}" required>
+            </div>
+            <div class="field">
+              <label>Beschrijving</label>
+              <textarea name="description" rows="4">{{ e.description or '' }}</textarea>
+            </div>
+            <div class="field">
+              <label>Nieuwe foto <span class="optional">(optioneel)</span></label>
+              <input type="file" name="photo" accept="image/*">
+            </div>
+            <div class="field">
+              <label>Locatie <span class="optional">(optioneel — voor de kaart)</span></label>
+              <div class="location-row">
+                <input type="text" name="location_name" id="loc-name-{{ e.id }}"
+                       value="{{ e.location_name or '' }}" placeholder="bijv. Amsterdam" style="flex:1">
+                <button type="button" class="btn-outline btn--small"
+                        onclick="geocode('loc-name-{{ e.id }}','loc-lat-{{ e.id }}','loc-lng-{{ e.id }}')">📍 Zoeken</button>
+              </div>
+              <div class="location-coords">
+                <input type="number" step="any" name="location_lat" id="loc-lat-{{ e.id }}"
+                       value="{{ e.location_lat or '' }}" placeholder="Breedtegraad">
+                <input type="number" step="any" name="location_lng" id="loc-lng-{{ e.id }}"
+                       value="{{ e.location_lng or '' }}" placeholder="Lengtegraad">
+              </div>
+            </div>
+            <button type="submit" class="btn-approve">Opslaan</button>
+            <button type="button" class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">Annuleren</button>
           </form>
         </div>
       </div>
