@@ -18,20 +18,20 @@ ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'primores2024')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
 
 MEMBERS = [
-    {'name': 'Bas',        'color': '#3498db'},
-    {'name': 'Glenn',      'color': '#27ae60'},
-    {'name': 'Eric',       'color': '#9b59b6'},
     {'name': 'Bart',       'color': '#e67e22'},
+    {'name': 'Bas',        'color': '#3498db'},
+    {'name': 'Eric',       'color': '#9b59b6'},
+    {'name': 'Gert',       'color': '#00cec9'},
+    {'name': 'Glenn',      'color': '#27ae60'},
     {'name': 'Jeroen D',   'color': '#e74c3c'},
-    {'name': 'Onno',       'color': '#00b894'},
+    {'name': 'Jeroen R',   'color': '#d63031'},
     {'name': 'Lutze',      'color': '#f0a500'},
+    {'name': 'Marcel',     'color': '#d35400'},
+    {'name': 'Onno',       'color': '#00b894'},
     {'name': 'Paul',       'color': '#6c5ce7'},
     {'name': 'Peter',      'color': '#0984e3'},
-    {'name': 'Marcel',     'color': '#d35400'},
-    {'name': 'Robin',      'color': '#a29bfe'},
-    {'name': 'Gert',       'color': '#00cec9'},
-    {'name': 'Jeroen R',   'color': '#d63031'},
     {'name': 'Robert-Jan', 'color': '#2980b9'},
+    {'name': 'Robin',      'color': '#a29bfe'},
 ]
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
