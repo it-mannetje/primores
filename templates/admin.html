@@ -10,16 +10,16 @@
 
   <!-- ── Tabs ──────────────────────────────────────────── -->
   <div class="admin-tabs">
-    <button class="admin-tab active" data-tab="pending">
+    <button class="admin-tab active" data-tab="primores">Primores evenementen</button>
+    <button class="admin-tab" data-tab="approved">Goedgekeurde bijdragen</button>
+    <button class="admin-tab" data-tab="pending">
       Wachtend op goedkeuring
       {% if pending %}<span class="badge">{{ pending | length }}</span>{% endif %}
     </button>
-    <button class="admin-tab" data-tab="primores">Primores evenementen</button>
-    <button class="admin-tab" data-tab="approved">Goedgekeurde bijdragen</button>
   </div>
 
   <!-- ── Tab: Pending ──────────────────────────────────── -->
-  <div class="admin-panel" id="tab-pending">
+  <div class="admin-panel" id="tab-pending" hidden>
     {% if pending %}
     <div class="admin-cards">
       {% for e in pending %}
@@ -58,7 +58,7 @@
   </div>
 
   <!-- ── Tab: Primores evenementen ─────────────────────── -->
-  <div class="admin-panel" id="tab-primores" hidden>
+  <div class="admin-panel" id="tab-primores">
 
     <h2 class="admin-section-title">Nieuw Primores evenement toevoegen</h2>
     <form class="admin-form" method="POST" action="{{ url_for('admin_add_primores') }}"
@@ -73,9 +73,9 @@
                   onclick="geocode('loc-name-new','loc-lat-new','loc-lng-new')">📍 Zoeken</button>
         </div>
         <div class="location-coords">
-          <input type="number" step="0.0001" name="location_lat" id="loc-lat-new"
+          <input type="number" step="any" name="location_lat" id="loc-lat-new"
                  placeholder="Breedtegraad">
-          <input type="number" step="0.0001" name="location_lng" id="loc-lng-new"
+          <input type="number" step="any" name="location_lng" id="loc-lng-new"
                  placeholder="Lengtegraad">
         </div>
       </div>
@@ -148,9 +148,9 @@
                         onclick="geocode('loc-name-{{ e.id }}','loc-lat-{{ e.id }}','loc-lng-{{ e.id }}')">📍 Zoeken</button>
               </div>
               <div class="location-coords">
-                <input type="number" step="0.0001" name="location_lat" id="loc-lat-{{ e.id }}"
+                <input type="number" step="any" name="location_lat" id="loc-lat-{{ e.id }}"
                        value="{{ e.location_lat or '' }}" placeholder="Breedtegraad">
-                <input type="number" step="0.0001" name="location_lng" id="loc-lng-{{ e.id }}"
+                <input type="number" step="any" name="location_lng" id="loc-lng-{{ e.id }}"
                        value="{{ e.location_lng or '' }}" placeholder="Lengtegraad">
               </div>
             </div>
