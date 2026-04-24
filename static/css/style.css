@@ -1204,12 +1204,66 @@ form-group legend {
 
 /* ── Responsive ──────────────────────────────────────── */
 
-@media (max-width: 640px) {
-  .header-inner { padding: 0 1rem; }
-  .logo-name { font-size: 1.3rem; }
-  .nav-link  { font-size: .7rem; padding: .4rem .65rem; }
-  .tl-labels { width: 80px; }
-  .tl-label  { padding: 0 .4rem; }
-  .tl-label-inner { font-size: .62rem; }
-  .submit-page, .overzicht-page, .inzenden-page, .admin-page { padding: 1rem 1rem 4rem; }
+/* Tablet (≤ 900px) */
+@media (max-width: 900px) {
+  .card-grid   { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .admin-cards { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .admin-tabs  { flex-wrap: wrap; }
+}
+
+/* Mobile (≤ 600px) */
+@media (max-width: 600px) {
+  :root {
+    --header-h:  64px;
+    --toolbar-h: 44px;
+  }
+
+  /* Header — hide logo text, shrink image */
+  .header-inner  { padding: 0 .75rem; gap: .75rem; }
+  .logo-img      { height: 48px; width: 48px; }
+  .logo-text     { display: none; }
+  .main-nav      { gap: .1rem; }
+  .nav-link      { font-size: .68rem; padding: .35rem .55rem; letter-spacing: .4px; }
+
+  /* Timeline labels */
+  .tl-labels     { width: 72px; }
+  .tl-label      { padding: 0 .4rem; }
+  .tl-label-inner { font-size: .6rem; }
+  .tl-label--primores .tl-label-inner { font-size: .72rem; }
+
+  /* Timeline toolbar */
+  .tl-toolbar    { gap: .5rem; padding: 0 .5rem; }
+
+  /* Modal */
+  .modal-box     { padding: 1.25rem 1rem; }
+  .modal-title   { font-size: 1.25rem; }
+
+  /* Overzicht */
+  .overzicht-page      { padding: 1.25rem .9rem 3rem; }
+  .overzicht-header h1 { font-size: 1.5rem; }
+  .card-grid           { grid-template-columns: 1fr; }
+
+  /* Inzenden */
+  .inzenden-page      { padding: 1.5rem .9rem 4rem; }
+  .inzenden-header h1 { font-size: 1.5rem; }
+  .member-grid        { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: .85rem; }
+
+  /* Submit form */
+  .submit-page      { padding: 1.25rem .9rem 4rem; }
+  .submit-header    { gap: .75rem; }
+  .submit-header h1 { font-size: 1.3rem; }
+  .submit-avatar    { width: 46px; height: 46px; font-size: 1.3rem; }
+
+  /* Admin */
+  .admin-page      { padding: 1rem .75rem 4rem; }
+  .admin-topbar h1 { font-size: 1.3rem; }
+  .admin-tabs      { gap: .2rem; }
+  .admin-tab       { font-size: .72rem; padding: .45rem .65rem; }
+  .admin-cards     { grid-template-columns: 1fr; }
+  .admin-form      { padding: 1rem; }
+}
+
+/* Extra-small (≤ 380px) */
+@media (max-width: 380px) {
+  .nav-link { font-size: .62rem; padding: .3rem .4rem; }
 }
