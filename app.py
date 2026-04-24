@@ -326,8 +326,11 @@ def admin_edit_primores(eid):
     date_year  = request.form.get('date_year', type=int)
     date_month = request.form.get('date_month', type=int) or None
     date_day   = request.form.get('date_day', type=int) or None
-    title       = request.form.get('title', '').strip()
-    description = request.form.get('description', '').strip()
+    title         = request.form.get('title', '').strip()
+    description   = request.form.get('description', '').strip()
+    location_name = request.form.get('location_name', '').strip() or None
+    location_lat  = request.form.get('location_lat', type=float)
+    location_lng  = request.form.get('location_lng', type=float)
 
     photo_filename = old['photo_filename'] if old else None
     new_photo = save_photo('photo')
@@ -337,39 +340,46 @@ def admin_edit_primores(eid):
 
     conn = get_db()
     conn.execute(
-        'UPDATE events SET date_year=?, date_month=?, date_day=?, title=?, description=?, photo_filename=? WHERE id=?',
-        (date_year, date_month, date_day, title, description, photo_filename, eid)
+        'UPDATE events SET date_year=?, date_month=?, date_day=?, title=?, description=?, '
+        'photo_filename=?, location_name=?, location_lat=?, location_lng=? WHERE id=?',
+        (date_year, date_month, date_day, title, description, photo_filename,
+         location_name, location_lat, location_lng, eid)
     )
     conn.commit()
     conn.close()
     flash('Evenement bijgewerkt.', 'success')
-    return redirect(url_for('admin'))
+    return redirect(url_for('admin') + '?tab=primores')
 
 
 def _upsert_event(person_name, is_primores):
     date_year  = request.form.get('date_year', type=int)
     date_month = request.form.get('date_month', type=int) or None
     date_day   = request.form.get('date_day', type=int) or None
-    title       = request.form.get('title', '').strip()
-    description = request.form.get('description', '').strip()
+    title         = request.form.get('title', '').strip()
+    description   = request.form.get('description', '').strip()
+    location_name = request.form.get('location_name', '').strip() or None
+    location_lat  = request.form.get('location_lat', type=float)
+    location_lng  = request.form.get('location_lng', type=float)
 
     if not date_year or not title:
         flash('Jaar en titel zijn verplicht.', 'error')
-        return redirect(url_for('admin'))
+        return redirect(url_for('admin') + '?tab=primores')
 
     photo_filename = save_photo('photo')
 
     conn = get_db()
     conn.execute(
-        'INSERT INTO events (person_name, date_year, date_month, date_day, title, description, photo_filename, approved, is_primores) '
-        'VALUES (?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO events (person_name, date_year, date_month, date_day, title, description, '
+        'photo_filename, approved, is_primores, location_name, location_lat, location_lng) '
+        'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
         (person_name, date_year, date_month, date_day, title, description, photo_filename,
-         1 if is_primores else 0, 1 if is_primores else 0)
+         1 if is_primores else 0, 1 if is_primores else 0,
+         location_name, location_lat, location_lng)
     )
     conn.commit()
     conn.close()
     flash('Evenement toegevoegd.', 'success')
-    return redirect(url_for('admin'))
+    return redirect(url_for('admin') + '?tab=primores')
 
 
 if __name__ == '__main__':
