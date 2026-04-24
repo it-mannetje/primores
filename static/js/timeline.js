@@ -170,6 +170,8 @@
     primLane.style.height = primH + 'px';
     primLane.innerHTML = '';
     primoresEvs.forEach(ev => primLane.appendChild(makeCard(ev, true)));
+    const primoresHidden = !visiblePersons.has('all') && !visiblePersons.has('primores');
+    primLane.style.opacity = primoresHidden ? '.15' : '1';
 
     // Render person lanes
     let labelIdx = 1; // 0 = primores label
@@ -194,9 +196,12 @@
       }
     });
 
-    // Sync Primores label height
+    // Sync Primores label height + visibility
     const priLbl = tlLabels.querySelector('.tl-label--primores');
-    if (priLbl) priLbl.style.height = primH + 'px';
+    if (priLbl) {
+      priLbl.style.height  = primH + 'px';
+      priLbl.style.opacity = primoresHidden ? '.25' : '1';
+    }
 
     // Sync scroll
     syncLabelScroll();
@@ -280,36 +285,37 @@
     render();
   });
 
-  // ── Person filters ────────────────────────────────────
+  // ── Avatar filter ─────────────────────────────────────
 
-  document.getElementById('personFilters').addEventListener('click', e => {
-    const btn = e.target.closest('.filter-btn');
-    if (!btn) return;
-    const person = btn.dataset.person;
+  function updateAvatarStates() {
+    document.querySelectorAll('.avatar-chip').forEach(chip => {
+      const person = chip.dataset.person;
+      const active = visiblePersons.has('all') || visiblePersons.has(person);
+      chip.classList.toggle('active',   active);
+      chip.classList.toggle('inactive', !active);
+    });
+  }
+
+  document.getElementById('avatarFilter').addEventListener('click', e => {
+    const chip = e.target.closest('.avatar-chip');
+    if (!chip) return;
+    const person = chip.dataset.person;
 
     if (person === 'all') {
       visiblePersons = new Set(['all']);
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    } else if (person === 'primores') {
-      visiblePersons = new Set(['primores']);
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
     } else {
-      document.querySelector('[data-person="all"]').classList.remove('active');
-      document.querySelector('[data-person="primores"]').classList.remove('active');
-      if (visiblePersons.has('all') || visiblePersons.has('primores')) {
-        visiblePersons = new Set([person]);
+      if (visiblePersons.has('all')) {
+        // First individual toggle: make explicit set of everyone, then remove clicked
+        visiblePersons = new Set([...MEMBERS.map(m => m.name), 'primores']);
+        visiblePersons.delete(person);
       } else {
         if (visiblePersons.has(person)) visiblePersons.delete(person);
         else visiblePersons.add(person);
-      }
-      btn.classList.toggle('active', visiblePersons.has(person));
-      if (visiblePersons.size === 0) {
-        visiblePersons.add('all');
-        document.querySelector('[data-person="all"]').classList.add('active');
+        if (visiblePersons.size === 0) visiblePersons = new Set(['all']);
       }
     }
+
+    updateAvatarStates();
     render();
   });
 

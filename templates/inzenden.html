@@ -10,7 +10,10 @@
   <div class="member-grid">
     {% for m in members %}
     <a href="{{ url_for('submit', person_name=m.name) }}" class="member-tile" style="--mc: {{ m.color }}">
-      <div class="member-tile-avatar">{{ m.name[0] }}</div>
+      <div class="member-tile-avatar">
+        {% if member_photos.get(m.name) %}<img src="{{ member_photos[m.name] }}" alt="{{ m.name }}">
+        {% else %}{{ m.name[0] }}{% endif %}
+      </div>
       <div class="member-tile-name">{{ m.name }}</div>
     </a>
     {% endfor %}

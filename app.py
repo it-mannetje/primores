@@ -59,6 +59,10 @@ def init_db():
             approved      INTEGER DEFAULT 0,
             is_primores   INTEGER DEFAULT 0
         );
+        CREATE TABLE IF NOT EXISTS profiles (
+            person_name    TEXT PRIMARY KEY,
+            photo_filename TEXT
+        );
     ''')
     for col_def in ['location_name TEXT', 'location_lat REAL', 'location_lng REAL']:
         try:
@@ -67,6 +71,25 @@ def init_db():
             pass
     conn.commit()
     conn.close()
+
+
+def get_member_photos():
+    conn = get_db()
+    rows = conn.execute('SELECT person_name, photo_filename FROM profiles').fetchall()
+    conn.close()
+    return {r['person_name']: r['photo_filename'] for r in rows}
+
+
+@app.context_processor
+def inject_member_photos():
+    try:
+        photos = get_member_photos()
+        return dict(member_photos={
+            name: url_for('uploaded_file', filename=fn)
+            for name, fn in photos.items() if fn
+        })
+    except Exception:
+        return dict(member_photos={})
 
 
 def allowed_file(filename):
@@ -313,6 +336,56 @@ def _delete_event(eid):
     conn.execute('DELETE FROM events WHERE id=?', (eid,))
     conn.commit()
     conn.close()
+
+
+@app.route('/admin/profiles/upload/<person_name>', methods=['POST'])
+@require_admin
+def admin_upload_profile(person_name):
+    if not member_by_name(person_name):
+        return 'Persoon niet gevonden', 404
+    photo = request.files.get('photo')
+    if photo and photo.filename and allowed_file(photo.filename):
+        ext = photo.filename.rsplit('.', 1)[1].lower()
+        slug = person_name.lower().replace(' ', '_').replace('-', '_')
+        filename = f'profile_{slug}.{ext}'
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        photo.save(filepath)
+        try:
+            from PIL import Image
+            with Image.open(filepath) as img:
+                w, h = img.size
+                size = min(w, h)
+                img = img.crop(((w-size)//2, (h-size)//2, (w+size)//2, (h+size)//2))
+                img = img.resize((300, 300), Image.LANCZOS)
+                img.save(filepath, optimize=True, quality=90)
+        except Exception:
+            pass
+        conn = get_db()
+        old = conn.execute('SELECT photo_filename FROM profiles WHERE person_name=?',
+                           (person_name,)).fetchone()
+        if old and old['photo_filename'] and old['photo_filename'] != filename:
+            delete_photo(old['photo_filename'])
+        conn.execute('INSERT OR REPLACE INTO profiles (person_name, photo_filename) VALUES (?,?)',
+                     (person_name, filename))
+        conn.commit()
+        conn.close()
+        flash(f'Profielfoto voor {person_name} bijgewerkt.', 'success')
+    return redirect(url_for('admin') + '?tab=profiles')
+
+
+@app.route('/admin/profiles/delete/<person_name>', methods=['POST'])
+@require_admin
+def admin_delete_profile(person_name):
+    conn = get_db()
+    row = conn.execute('SELECT photo_filename FROM profiles WHERE person_name=?',
+                       (person_name,)).fetchone()
+    if row and row['photo_filename']:
+        delete_photo(row['photo_filename'])
+    conn.execute('DELETE FROM profiles WHERE person_name=?', (person_name,))
+    conn.commit()
+    conn.close()
+    flash(f'Profielfoto voor {person_name} verwijderd.', 'success')
+    return redirect(url_for('admin') + '?tab=profiles')
 
 
 @app.route('/admin/approved/edit/<int:eid>', methods=['POST'])

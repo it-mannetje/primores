@@ -163,6 +163,78 @@ a   { color: inherit; text-decoration: none; }
   overflow: hidden;
 }
 
+/* ── Avatar filter bar ───────────────────────────────── */
+
+.tl-avatar-bar {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .45rem .75rem;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+.tl-avatar-bar::-webkit-scrollbar { display: none; }
+
+.avatar-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: opacity .15s;
+}
+
+.avatar-chip.inactive {
+  opacity: .28;
+  filter: grayscale(1);
+}
+.avatar-chip.inactive:hover { opacity: .55; }
+
+.avatar-chip-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--mc, var(--navy));
+  color: #fff;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid rgba(0,0,0,.08);
+  transition: border-color .15s;
+  overflow: hidden;
+}
+.avatar-chip-img img { width: 100%; height: 100%; object-fit: cover; }
+
+.avatar-chip.active .avatar-chip-img  { border-color: var(--mc, var(--navy)); }
+.avatar-chip--all .avatar-chip-img    { background: var(--bg); font-size: .75rem; color: var(--text-mid); }
+.avatar-chip--primores .avatar-chip-img { background: var(--navy-dark); font-family: var(--serif); font-style: italic; font-size: .75rem; }
+.avatar-chip--primores.active .avatar-chip-img { border-color: var(--gold); }
+
+.avatar-chip-name {
+  font-family: var(--sans);
+  font-size: .56rem;
+  font-weight: 600;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  max-width: 54px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── Toolbar ─────────────────────────────────────────── */
 
 .tl-toolbar {
@@ -1194,6 +1266,124 @@ form-group legend {
   flex-direction: column;
   gap: .9rem;
 }
+
+/* ── Profile card grid (admin) ───────────────────────── */
+
+.profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1.25rem;
+}
+
+.profile-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border-top: 3px solid var(--mc, var(--navy));
+  padding: 1.1rem .85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .65rem;
+  text-align: center;
+}
+
+.profile-card-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--mc, var(--navy));
+  color: #fff;
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid var(--mc, var(--navy));
+}
+.profile-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile-card-name { font-weight: 700; font-size: .82rem; color: var(--text); }
+
+.profile-file-input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+/* ── Lane label avatars ───────────────────────────────── */
+
+.tl-label {
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  padding: 8px .5rem !important;
+}
+
+.tl-label-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--mc, var(--navy));
+  color: #fff;
+  font-family: var(--serif);
+  font-size: .85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.3);
+}
+.tl-label-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.tl-label--primores .tl-label-avatar {
+  background: var(--gold);
+  border-color: rgba(255,255,255,.4);
+}
+
+/* ── Member tile photo ───────────────────────────────── */
+.member-tile-avatar img  { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* ── Submit / admin header avatar photo ─────────────── */
+.submit-avatar img  { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* ── Pill & card mini-avatar ─────────────────────────── */
+.filter-pill        { display: inline-flex; align-items: center; gap: 5px; }
+.filter-pill--primores .pill-avatar { background: var(--navy-dark); }
+
+.pill-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--mc, var(--navy));
+  color: #fff;
+  font-size: .6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.pill-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.ecb-person      { display: inline-flex; align-items: center; gap: 5px; }
+
+.card-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--mc, var(--navy));
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.card-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .empty-state {
   text-align: center;

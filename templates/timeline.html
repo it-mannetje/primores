@@ -10,23 +10,48 @@
       <button class="btn-zoom" id="zoomOut" title="Uitzoomen">−</button>
       <button class="btn-zoom" id="zoomReset" title="Reset zoom" style="font-size:12px;padding:0 10px;">⟳</button>
     </div>
-    <div class="tl-filters" id="personFilters">
-      <button class="filter-btn active" data-person="all">Alle heren</button>
-      <button class="filter-btn filter-btn--primores" data-person="primores">Primores</button>
-      {% for m in members %}
-      <button class="filter-btn" data-person="{{ m.name }}" style="--mc: {{ m.color }}">{{ m.name }}</button>
-      {% endfor %}
-    </div>
+  </div>
+
+  <!-- Avatar filter bar -->
+  <div class="tl-avatar-bar" id="avatarFilter">
+    <button class="avatar-chip avatar-chip--all active" data-person="all">
+      <div class="avatar-chip-img">alle</div>
+      <span class="avatar-chip-name">Alle</span>
+    </button>
+    <button class="avatar-chip avatar-chip--primores active" data-person="primores">
+      <div class="avatar-chip-img">P</div>
+      <span class="avatar-chip-name">Primores</span>
+    </button>
+    {% for m in members %}
+    <button class="avatar-chip active" data-person="{{ m.name }}" style="--mc: {{ m.color }}">
+      <div class="avatar-chip-img">
+        {% if member_photos.get(m.name) %}
+        <img src="{{ member_photos[m.name] }}" alt="{{ m.name }}">
+        {% else %}
+        {{ m.name[0] }}
+        {% endif %}
+      </div>
+      <span class="avatar-chip-name">{{ m.name }}</span>
+    </button>
+    {% endfor %}
   </div>
 
   <div class="tl-layout" id="tlLayout">
     <!-- Sticky lane labels (left column) -->
     <div class="tl-labels" id="tlLabels">
       <div class="tl-label tl-label--primores">
+        <div class="tl-label-avatar">P</div>
         <div class="tl-label-inner">Primores</div>
       </div>
       {% for m in members %}
       <div class="tl-label" data-person="{{ m.name }}" style="--mc: {{ m.color }}">
+        <div class="tl-label-avatar">
+          {% if member_photos.get(m.name) %}
+          <img src="{{ member_photos[m.name] }}" alt="{{ m.name }}">
+          {% else %}
+          {{ m.name[0] }}
+          {% endif %}
+        </div>
         <div class="tl-label-inner">{{ m.name }}</div>
       </div>
       {% endfor %}

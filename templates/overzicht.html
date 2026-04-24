@@ -16,7 +16,11 @@
     {% for m in members %}
     <a href="{{ url_for('overzicht', persoon=m.name) }}"
        class="filter-pill {% if person_filter == m.name %}active{% endif %}"
-       style="--mc: {{ m.color }}">{{ m.name }}</a>
+       style="--mc: {{ m.color }}">
+      <span class="pill-avatar">
+        {% if member_photos.get(m.name) %}<img src="{{ member_photos[m.name] }}" alt="">
+        {% else %}{{ m.name[0] }}{% endif %}
+      </span>{{ m.name }}</a>
     {% endfor %}
   </div>
 
@@ -39,7 +43,13 @@
       <div class="ecb-body">
         <div class="ecb-meta">
           <span class="ecb-person" style="color: {{ color }}">
-            {{ e.person_name or 'Primores' }}
+            {% set pname = e.person_name or 'Primores' %}
+            <span class="card-avatar" style="--mc: {{ color }}">
+              {% if e.person_name and member_photos.get(e.person_name) %}
+              <img src="{{ member_photos[e.person_name] }}" alt="">
+              {% else %}{{ pname[0] }}{% endif %}
+            </span>
+            {{ pname }}
           </span>
           <span class="ecb-date">
             {% if e.date_day %}{{ e.date_day }} {% endif %}

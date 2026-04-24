@@ -16,6 +16,7 @@
       Wachtend op goedkeuring
       {% if pending %}<span class="badge">{{ pending | length }}</span>{% endif %}
     </button>
+    <button class="admin-tab" data-tab="profiles">Profielfotos</button>
   </div>
 
   <!-- ── Tab: Pending ──────────────────────────────────── -->
@@ -254,6 +255,40 @@
     {% else %}
     <div class="empty-state">Nog geen goedgekeurde bijdragen.</div>
     {% endif %}
+  </div>
+
+  <!-- ── Tab: Profielfotos ─────────────────────────────── -->
+  <div class="admin-panel" id="tab-profiles" hidden>
+    <h2 class="admin-section-title">Profielfotos leden</h2>
+    <p style="color:var(--text-light);font-size:.85rem;margin-bottom:1.5rem">
+      Klik op "Foto uploaden" bij een lid om een profielfoto toe te voegen. De foto wordt automatisch bijgesneden tot een vierkant.
+    </p>
+    <div class="profiles-grid">
+      {% for m in members %}
+      <div class="profile-card" style="--mc: {{ m.color }}">
+        <div class="profile-card-avatar">
+          {% if member_photos.get(m.name) %}
+          <img src="{{ member_photos[m.name] }}" alt="{{ m.name }}">
+          {% else %}
+          {{ m.name[0] }}
+          {% endif %}
+        </div>
+        <div class="profile-card-name">{{ m.name }}</div>
+        <form method="POST" action="{{ url_for('admin_upload_profile', person_name=m.name) }}"
+              enctype="multipart/form-data" style="display:flex;flex-direction:column;align-items:center;gap:.4rem">
+          <input type="file" name="photo" accept="image/*" class="profile-file-input"
+                 id="pf-{{ loop.index }}" onchange="this.form.submit()">
+          <button type="button" class="btn-outline btn--small"
+                  onclick="document.getElementById('pf-{{ loop.index }}').click()">📷 Uploaden</button>
+        </form>
+        {% if member_photos.get(m.name) %}
+        <form method="POST" action="{{ url_for('admin_delete_profile', person_name=m.name) }}">
+          <button class="btn-reject btn--small">✕ Verwijderen</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
   </div>
 
 </div>
