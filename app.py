@@ -12,7 +12,7 @@ app.secret_key = os.environ.get('SECRET_KEY', 'primores-jaarclub-2024-xK9mP3r!')
 BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 DB_PATH      = os.path.join(BASE_DIR, 'primores.db')
-ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
+ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'}
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'primores2024')
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
@@ -113,14 +113,21 @@ def save_photo(file_field):
     photo = request.files.get(file_field)
     if photo and photo.filename and allowed_file(photo.filename):
         ext = photo.filename.rsplit('.', 1)[1].lower()
+        # iOS sends JPEG data even for HEIC-named files; store as jpg
+        if ext in ('heic', 'heif'):
+            ext = 'jpg'
         filename = f"{uuid.uuid4().hex}.{ext}"
-        photo.save(os.path.join(UPLOAD_FOLDER, filename))
+        img_path = os.path.join(UPLOAD_FOLDER, filename)
+        photo.save(img_path)
         try:
-            from PIL import Image
-            img_path = os.path.join(UPLOAD_FOLDER, filename)
+            from PIL import Image, ImageOps
             with Image.open(img_path) as img:
+                img = ImageOps.exif_transpose(img)  # fix rotation from EXIF
                 img.thumbnail((1200, 900), Image.LANCZOS)
-                img.save(img_path, optimize=True, quality=85)
+                save_kwargs = {'optimize': True}
+                if img.format != 'PNG':
+                    save_kwargs['quality'] = 85
+                img.save(img_path, **save_kwargs)
         except Exception:
             pass
         return filename
