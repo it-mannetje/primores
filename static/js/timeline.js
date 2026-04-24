@@ -247,6 +247,7 @@
       <div class="modal-date">${dateStr}</div>
       ${ev.photo_url ? `<img class="modal-photo" src="${ev.photo_url}" alt="${ev.title}">` : ''}
       ${ev.description ? `<p class="modal-desc">${ev.description.replace(/\n/g,'<br>')}</p>` : ''}
+      ${ev.url ? `<a class="modal-url" href="${ev.url}" target="_blank" rel="noopener noreferrer">🔗 Meer informatie</a>` : ''}
     `;
     modal.hidden = false;
     document.getElementById('modalClose').focus();

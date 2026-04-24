@@ -64,7 +64,7 @@ def init_db():
             photo_filename TEXT
         );
     ''')
-    for col_def in ['location_name TEXT', 'location_lat REAL', 'location_lng REAL']:
+    for col_def in ['location_name TEXT', 'location_lat REAL', 'location_lng REAL', 'url TEXT']:
         try:
             conn.execute(f'ALTER TABLE events ADD COLUMN {col_def}')
         except Exception:
@@ -194,6 +194,7 @@ def api_events():
             'location_name': e['location_name'],
             'location_lat':  e['location_lat'],
             'location_lng':  e['location_lng'],
+            'url':           e['url'],
         })
     return jsonify(result)
 
@@ -223,6 +224,7 @@ def submit(person_name):
         location_name = request.form.get('location_name', '').strip() or None
         location_lat  = request.form.get('location_lat', type=float)
         location_lng  = request.form.get('location_lng', type=float)
+        url           = request.form.get('url', '').strip() or None
 
         errors = []
         if not date_year or not (1940 <= date_year <= 2030):
@@ -244,10 +246,10 @@ def submit(person_name):
         conn = get_db()
         conn.execute(
             'INSERT INTO events (person_name, date_year, date_month, date_day, title, description, '
-            'photo_filename, approved, is_primores, location_name, location_lat, location_lng) '
-            'VALUES (?,?,?,?,?,?,?,0,0,?,?,?)',
+            'photo_filename, approved, is_primores, location_name, location_lat, location_lng, url) '
+            'VALUES (?,?,?,?,?,?,?,0,0,?,?,?,?)',
             (member['name'], date_year, date_month, date_day, title, description, photo_filename,
-             location_name, location_lat, location_lng)
+             location_name, location_lat, location_lng, url)
         )
         conn.commit()
         conn.close()
@@ -403,6 +405,7 @@ def admin_edit_approved(eid):
     location_name = request.form.get('location_name', '').strip() or None
     location_lat  = request.form.get('location_lat', type=float)
     location_lng  = request.form.get('location_lng', type=float)
+    url           = request.form.get('url', '').strip() or None
 
     photo_filename = old['photo_filename'] if old else None
     new_photo = save_photo('photo')
@@ -413,9 +416,9 @@ def admin_edit_approved(eid):
     conn = get_db()
     conn.execute(
         'UPDATE events SET date_year=?, date_month=?, date_day=?, title=?, description=?, '
-        'photo_filename=?, location_name=?, location_lat=?, location_lng=? WHERE id=?',
+        'photo_filename=?, location_name=?, location_lat=?, location_lng=?, url=? WHERE id=?',
         (date_year, date_month, date_day, title, description, photo_filename,
-         location_name, location_lat, location_lng, eid)
+         location_name, location_lat, location_lng, url, eid)
     )
     conn.commit()
     conn.close()
@@ -444,6 +447,7 @@ def admin_edit_primores(eid):
     location_name = request.form.get('location_name', '').strip() or None
     location_lat  = request.form.get('location_lat', type=float)
     location_lng  = request.form.get('location_lng', type=float)
+    url           = request.form.get('url', '').strip() or None
 
     photo_filename = old['photo_filename'] if old else None
     new_photo = save_photo('photo')
@@ -454,9 +458,9 @@ def admin_edit_primores(eid):
     conn = get_db()
     conn.execute(
         'UPDATE events SET date_year=?, date_month=?, date_day=?, title=?, description=?, '
-        'photo_filename=?, location_name=?, location_lat=?, location_lng=? WHERE id=?',
+        'photo_filename=?, location_name=?, location_lat=?, location_lng=?, url=? WHERE id=?',
         (date_year, date_month, date_day, title, description, photo_filename,
-         location_name, location_lat, location_lng, eid)
+         location_name, location_lat, location_lng, url, eid)
     )
     conn.commit()
     conn.close()
@@ -473,6 +477,7 @@ def _upsert_event(person_name, is_primores):
     location_name = request.form.get('location_name', '').strip() or None
     location_lat  = request.form.get('location_lat', type=float)
     location_lng  = request.form.get('location_lng', type=float)
+    url           = request.form.get('url', '').strip() or None
 
     if not date_year or not title:
         flash('Jaar en titel zijn verplicht.', 'error')
@@ -483,11 +488,11 @@ def _upsert_event(person_name, is_primores):
     conn = get_db()
     conn.execute(
         'INSERT INTO events (person_name, date_year, date_month, date_day, title, description, '
-        'photo_filename, approved, is_primores, location_name, location_lat, location_lng) '
-        'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+        'photo_filename, approved, is_primores, location_name, location_lat, location_lng, url) '
+        'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
         (person_name, date_year, date_month, date_day, title, description, photo_filename,
          1 if is_primores else 0, 1 if is_primores else 0,
-         location_name, location_lat, location_lng)
+         location_name, location_lat, location_lng, url)
     )
     conn.commit()
     conn.close()

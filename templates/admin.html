@@ -80,6 +80,10 @@
                  placeholder="Lengtegraad">
         </div>
       </div>
+      <div class="field">
+        <label>URL <span class="optional">(optioneel — opent in nieuw venster)</span></label>
+        <input type="url" name="url" placeholder="https://…">
+      </div>
       <button type="submit" class="btn-submit btn--gold">Evenement toevoegen</button>
     </form>
 
@@ -154,6 +158,10 @@
                 <input type="number" step="any" name="location_lng" id="loc-lng-{{ e.id }}"
                        value="{{ e.location_lng or '' }}" placeholder="Lengtegraad">
               </div>
+            </div>
+            <div class="field">
+              <label>URL <span class="optional">(optioneel — opent in nieuw venster)</span></label>
+              <input type="url" name="url" value="{{ e.url or '' }}" placeholder="https://…">
             </div>
             <button type="submit" class="btn-approve">Opslaan</button>
             <button type="button" class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">Annuleren</button>
@@ -244,6 +252,10 @@
                 <input type="number" step="any" name="location_lng" id="loc-lng-{{ e.id }}"
                        value="{{ e.location_lng or '' }}" placeholder="Lengtegraad">
               </div>
+            </div>
+            <div class="field">
+              <label>URL <span class="optional">(optioneel — opent in nieuw venster)</span></label>
+              <input type="url" name="url" value="{{ e.url or '' }}" placeholder="https://…">
             </div>
             <button type="submit" class="btn-approve">Opslaan</button>
             <button type="button" class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">Annuleren</button>
