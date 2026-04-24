@@ -380,7 +380,7 @@ a   { color: inherit; text-decoration: none; }
 
 .tl-lane--primores {
   height: 160px;
-  background: #fdf8ec;
+  background: #eaeaea;
   border-bottom: 2px solid var(--gold);
 }
 
@@ -434,11 +434,11 @@ a   { color: inherit; text-decoration: none; }
   margin-bottom: 3px;
 }
 
-.tl-event--primores .tl-event-date { color: var(--gold); }
+.tl-event--primores .tl-event-date { color: var(--navy); }
 
 .tl-event-img {
   width: 100%;
-  height: 52px;
+  height: 78px;
   object-fit: cover;
   border-radius: 3px;
   margin-bottom: 4px;
