@@ -183,7 +183,7 @@
       laneEl.style.height = h + 'px';
       laneEl.innerHTML    = '';
 
-      const hidden = !visiblePersons.has('all') && !visiblePersons.has(m.name);
+      const hidden = (!visiblePersons.has('all') && !visiblePersons.has(m.name)) || events.length === 0;
       laneEl.style.display = hidden ? 'none' : '';
 
       events.forEach(ev => laneEl.appendChild(makeCard(ev, false)));
@@ -333,6 +333,14 @@
     .then(r => r.json())
     .then(data => {
       allEvents = data;
+      // Hide avatar chips for members with no events
+      const namesWithEvents = new Set(allEvents.filter(e => !e.is_primores).map(e => e.person_name));
+      document.querySelectorAll('.avatar-chip[data-person]').forEach(chip => {
+        const p = chip.dataset.person;
+        if (p !== 'all' && p !== 'primores' && !namesWithEvents.has(p)) {
+          chip.style.display = 'none';
+        }
+      });
       render();
       // Scroll to show earliest event or ~1990
       const minYear = allEvents.length
