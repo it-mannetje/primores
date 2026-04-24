@@ -232,7 +232,7 @@ async function geocode(nameId, latId, lngId) {
   if (!name) return;
   try {
     const res = await fetch(
-      'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=nl,be&q='
+      'https://nominatim.openstreetmap.org/search?format=json&limit=1&q='
       + encodeURIComponent(name)
     );
     const data = await res.json();
