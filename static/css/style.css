@@ -979,6 +979,7 @@ a   { color: inherit; text-decoration: none; }
 .field input[type="text"],
 .field input[type="number"],
 .field input[type="url"],
+.field input[type="email"],
 .field select,
 .field textarea {
   font-family: var(--sans);
@@ -994,7 +995,8 @@ a   { color: inherit; text-decoration: none; }
 
 .field input:focus,
 .field select:focus,
-.field textarea:focus {
+.field textarea:focus,
+.field input[type="email"]:focus {
   outline: none;
   border-color: var(--navy);
 }
@@ -1137,7 +1139,7 @@ form-group legend {
   font-family: var(--serif);
   font-size: 2rem;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--white);
   background: var(--navy);
   padding: .6rem 1rem;
   border-radius: var(--radius);
@@ -1150,7 +1152,7 @@ form-group legend {
   color: var(--navy);
 }
 
-.login-box .btn-submit { align-self: stretch; text-align: center; }
+.login-box .btn-submit { align-self: stretch; text-align: center; margin-top: .75rem; }
 
 
 /* ══════════════════════════════════════════════════════
