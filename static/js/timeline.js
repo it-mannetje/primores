@@ -193,10 +193,10 @@
       events.forEach(ev => laneEl.appendChild(makeCard(ev, false)));
 
       // Sync label height + visibility
-      const lblEls = tlLabels.querySelectorAll('.tl-label');
-      if (lblEls[i + 1]) {
-        lblEls[i + 1].style.height  = h + 'px';
-        lblEls[i + 1].style.display = hidden ? 'none' : '';
+      const lblEl = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
+      if (lblEl) {
+        lblEl.style.height  = h + 'px';
+        lblEl.style.display = hidden ? 'none' : '';
       }
     });
 
@@ -362,9 +362,8 @@
   tlScroll.addEventListener('scroll', () => {
     tlLabels.scrollTop = tlScroll.scrollTop;
     updateScrubberViewport();
-    const centreX = tlScroll.scrollLeft + tlScroll.clientWidth / 2;
-    const year = Math.round(START_YEAR + (centreX - LEFT_PAD) / pxPerYear);
-    updateActiveYear(Math.max(START_YEAR, Math.min(END_YEAR, year)));
+    clearTimeout(reorderTimer);
+    reorderTimer = setTimeout(reorderLanes, 300);
   });
 
   // ── Zoom ──────────────────────────────────────────────
@@ -425,67 +424,37 @@
     tlScroll.scrollLeft = Math.max(0, x - tlScroll.clientWidth / 2);
   }
 
-  // ── Year strip navigator ──────────────────────────────
+  // ── Lane reordering by visible period ────────────────
 
-  const yearStripWrap = document.getElementById('yearStripWrap');
-  const yearStrip     = document.getElementById('yearStrip');
-  const yearPrev      = document.getElementById('yearPrev');
-  const yearNext      = document.getElementById('yearNext');
-  let   yearOffset    = 0;
-  let   activeYear    = null;
+  let reorderTimer = null;
 
-  function buildYearStrip() {
-    yearStrip.innerHTML = '';
-    for (let y = START_YEAR; y <= END_YEAR; y++) {
-      const btn = document.createElement('button');
-      btn.className = 'tl-year-btn';
-      btn.dataset.year = y;
-      btn.textContent = y;
-      btn.addEventListener('click', () => scrollToYear(y));
-      yearStrip.appendChild(btn);
-    }
-    yearOffset = 0;
-    yearStrip.style.transform = 'translateX(0)';
-    updateYearArrows();
-  }
+  function reorderLanes() {
+    const viewStart = tlScroll.scrollLeft;
+    const viewEnd   = viewStart + tlScroll.clientWidth;
 
-  function updateActiveYear(year) {
-    if (year === activeYear) return;
-    activeYear = year;
-    yearStrip.querySelectorAll('.tl-year-btn').forEach(btn => {
-      btn.classList.toggle('active', +btn.dataset.year === year);
+    const withEvents    = [];
+    const withoutEvents = [];
+
+    MEMBERS.forEach(m => {
+      if (!membersWithEvents.has(m.name)) return; // totally hidden — skip
+      const hasInView = allEvents.some(ev =>
+        !ev.is_primores &&
+        ev.person_name === m.name &&
+        ev._x !== undefined &&
+        ev._x + CARD_W >= viewStart &&
+        ev._x <= viewEnd
+      );
+      (hasInView ? withEvents : withoutEvents).push(m);
     });
-    // Scroll strip so the active button is centred in the wrap
-    const activeBtn = yearStrip.querySelector('.tl-year-btn.active');
-    if (!activeBtn) return;
-    const wrapW  = yearStripWrap.clientWidth;
-    const target = -(activeBtn.offsetLeft - wrapW / 2 + activeBtn.offsetWidth / 2);
-    const minOff = Math.min(0, -(yearStrip.scrollWidth - wrapW));
-    yearOffset   = Math.max(minOff, Math.min(0, target));
-    yearStrip.style.transform = `translateX(${yearOffset}px)`;
-    updateYearArrows();
+
+    // MEMBERS is already alphabetical, so both arrays are already sorted
+    [...withEvents, ...withoutEvents].forEach(m => {
+      const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
+      const lblEl  = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
+      if (laneEl) tlCanvas.appendChild(laneEl);
+      if (lblEl)  tlLabels.appendChild(lblEl);
+    });
   }
-
-  function updateYearArrows() {
-    const minOff = Math.min(0, -(yearStrip.scrollWidth - yearStripWrap.clientWidth));
-    yearPrev.disabled = yearOffset >= 0;
-    yearNext.disabled = yearOffset <= minOff;
-  }
-
-  yearPrev.addEventListener('click', () => {
-    yearOffset = Math.min(0, yearOffset + yearStripWrap.clientWidth * 0.6);
-    yearStrip.style.transform = `translateX(${yearOffset}px)`;
-    updateYearArrows();
-  });
-
-  yearNext.addEventListener('click', () => {
-    const minOff = Math.min(0, -(yearStrip.scrollWidth - yearStripWrap.clientWidth));
-    yearOffset = Math.max(minOff, yearOffset - yearStripWrap.clientWidth * 0.6);
-    yearStrip.style.transform = `translateX(${yearOffset}px)`;
-    updateYearArrows();
-  });
-
-  buildYearStrip();
 
 
   // ── Load & init ───────────────────────────────────────
@@ -507,6 +476,7 @@
         ? Math.min(...allEvents.map(e => e.date_year))
         : 1990;
       scrollToYear(Math.max(minYear - 2, START_YEAR));
+      reorderLanes();
     })
     .catch(err => console.error('Kon evenementen niet laden:', err));
 
