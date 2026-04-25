@@ -9,8 +9,7 @@ except ImportError:
     pass
 import smtplib
 from datetime import datetime, timedelta
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.message import EmailMessage
 from functools import wraps
 from flask import (Flask, render_template, request, jsonify,
                    redirect, url_for, session, flash, send_from_directory)
@@ -216,7 +215,7 @@ def send_magic_link(to_email, magic_url):
     mail_from     = os.environ.get('MAIL_FROM') or mail_username
     use_tls       = os.environ.get('MAIL_USE_TLS', '1') == '1'
 
-    msg = MIMEMultipart('alternative')
+    msg = EmailMessage()
     msg['Subject'] = 'Inloglink Canon Primores'
     msg['From']    = mail_from
     msg['To']      = to_email
@@ -224,7 +223,7 @@ def send_magic_link(to_email, magic_url):
     text_body = (
         f'Klik op de volgende link om in te loggen bij de Canon Primores beheeromgeving:\n\n'
         f'{magic_url}\n\n'
-        f'Deze link is 15 minuten geldig en kan slechts één keer gebruikt worden.\n'
+        f'Deze link is 15 minuten geldig en kan slechts eenmalig gebruikt worden.\n'
         f'Heb je deze link niet aangevraagd? Doe dan niets.'
     )
     html_body = f'''
@@ -244,13 +243,13 @@ def send_magic_link(to_email, magic_url):
   </p>
   <hr style="border:none;border-top:1px solid #eee;margin:1.5rem 0">
   <p style="color:#aaa;font-size:.8rem">
-    Deze link is 15 minuten geldig en kan slechts één keer worden gebruikt.<br>
+    Deze link is 15 minuten geldig en eenmalig te gebruiken.<br>
     Heb je deze link niet aangevraagd? Dan hoef je niets te doen.
   </p>
 </div>'''
 
-    msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
-    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+    msg.set_content(text_body)
+    msg.add_alternative(html_body, subtype='html')
 
     try:
         with smtplib.SMTP(mail_server, mail_port) as server:
