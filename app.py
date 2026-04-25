@@ -260,7 +260,9 @@ def send_magic_link(to_email, magic_url):
             server.send_message(msg)
         return True
     except Exception as exc:
-        app.logger.error('Failed to send magic link to %s: %s', to_email, exc)
+        import traceback
+        app.logger.error('Failed to send magic link to %s: %s\n%s',
+                         to_email, exc, traceback.format_exc())
         return False
 
 
