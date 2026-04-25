@@ -6,13 +6,60 @@
   <div class="login-box">
     <div class="login-logo">Primores</div>
     <h2>Beheeromgeving</h2>
+
+    {% if sent %}
+    <div class="magic-sent">
+      <div class="magic-sent-icon">✉</div>
+      <p>Als <strong>{{ email }}</strong> bekend is in ons systeem, ontvang je binnen enkele seconden een inloglink in je inbox.</p>
+      <p class="magic-sent-sub">De link is 15 minuten geldig. Controleer ook je spam-map.</p>
+      <a href="{{ url_for('admin_login') }}" class="btn-outline magic-sent-retry">
+        Opnieuw aanvragen
+      </a>
+    </div>
+    {% else %}
+    <p class="login-intro">
+      Voer je e-mailadres in. Je ontvangt een inloglink — geen wachtwoord nodig.
+    </p>
     <form method="POST">
       <div class="field">
-        <label for="password">Wachtwoord</label>
-        <input type="password" id="password" name="password" autofocus required>
+        <label for="email">E-mailadres</label>
+        <input type="email" id="email" name="email" autofocus required
+               placeholder="naam@voorbeeld.nl">
       </div>
-      <button type="submit" class="btn-submit">Inloggen</button>
+      <button type="submit" class="btn-submit">Inloglink aanvragen</button>
     </form>
+    {% endif %}
   </div>
 </div>
+
+<style>
+.login-intro {
+  color: var(--text-light, #888);
+  font-size: .9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+.magic-sent {
+  text-align: center;
+  padding: .5rem 0 1rem;
+}
+.magic-sent-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.magic-sent p {
+  color: var(--text, #333);
+  margin-bottom: .75rem;
+  line-height: 1.5;
+}
+.magic-sent-sub {
+  font-size: .85rem;
+  color: var(--text-light, #888) !important;
+}
+.magic-sent-retry {
+  display: inline-block;
+  margin-top: 1.25rem;
+  font-size: .9rem;
+}
+</style>
 {% endblock %}

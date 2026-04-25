@@ -5,7 +5,19 @@
 <div class="admin-page">
   <div class="admin-topbar">
     <h1>Beheeromgeving Primores</h1>
-    <a href="{{ url_for('admin_logout') }}" class="btn-outline">Uitloggen</a>
+    <div class="admin-topbar-user">
+      {% if current_user %}
+      <span class="admin-user-info">
+        <span class="admin-user-name">{{ current_user.name or current_user.email }}</span>
+        <span class="admin-role-badge admin-role-badge--{{ current_user.role }}">
+          {% if current_user.role == 'admin' %}Beheerder
+          {% elif current_user.role == 'superuser' %}Redacteur
+          {% else %}Lezer{% endif %}
+        </span>
+      </span>
+      {% endif %}
+      <a href="{{ url_for('admin_logout') }}" class="btn-outline">Uitloggen</a>
+    </div>
   </div>
 
   <!-- ── Tabs ──────────────────────────────────────────── -->
@@ -17,6 +29,9 @@
       {% if pending %}<span class="badge">{{ pending | length }}</span>{% endif %}
     </button>
     <button class="admin-tab" data-tab="profiles">Profielfotos</button>
+    {% if current_user and current_user.role == 'admin' %}
+    <button class="admin-tab" data-tab="users">Gebruikers</button>
+    {% endif %}
   </div>
 
   <!-- ── Tab: Pending ──────────────────────────────────── -->
@@ -42,13 +57,17 @@
              src="{{ url_for('uploaded_file', filename=e.photo_filename) }}" alt="">
         {% endif %}
         <div class="admin-card-actions">
+          {% if current_user and current_user.role in ('admin', 'superuser') %}
           <form method="POST" action="{{ url_for('admin_approve', eid=e.id) }}" style="display:inline">
             <button class="btn-approve">✓ Goedkeuren</button>
           </form>
+          {% endif %}
+          {% if current_user and current_user.role == 'admin' %}
           <form method="POST" action="{{ url_for('admin_reject', eid=e.id) }}" style="display:inline"
                 onsubmit="return confirm('Bijdrage afwijzen en verwijderen?')">
             <button class="btn-reject">✕ Afwijzen</button>
           </form>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
@@ -61,6 +80,7 @@
   <!-- ── Tab: Primores evenementen ─────────────────────── -->
   <div class="admin-panel" id="tab-primores">
 
+    {% if current_user and current_user.role in ('admin', 'superuser') %}
     <h2 class="admin-section-title">Nieuw Primores evenement toevoegen</h2>
     <form class="admin-form" method="POST" action="{{ url_for('admin_add_primores') }}"
           enctype="multipart/form-data">
@@ -86,6 +106,7 @@
       </div>
       <button type="submit" class="btn-submit btn--gold">Evenement toevoegen</button>
     </form>
+    {% endif %}
 
     <h2 class="admin-section-title" style="margin-top:2.5rem">Bestaande Primores evenementen</h2>
     {% if primores_events %}
@@ -104,12 +125,17 @@
              src="{{ url_for('uploaded_file', filename=e.photo_filename) }}" alt="">
         {% endif %}
         <div class="admin-card-actions">
+          {% if current_user and current_user.role in ('admin', 'superuser') %}
           <button class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">✎ Bewerken</button>
+          {% endif %}
+          {% if current_user and current_user.role == 'admin' %}
           <form method="POST" action="{{ url_for('admin_delete', eid=e.id) }}" style="display:inline"
                 onsubmit="return confirm('Dit evenement verwijderen?')">
             <button class="btn-reject btn--small">✕ Verwijderen</button>
           </form>
+          {% endif %}
         </div>
+        {% if current_user and current_user.role in ('admin', 'superuser') %}
         <div class="admin-edit-form" id="edit-{{ e.id }}" hidden>
           <form method="POST" action="{{ url_for('admin_edit_primores', eid=e.id) }}"
                 enctype="multipart/form-data">
@@ -167,6 +193,7 @@
             <button type="button" class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">Annuleren</button>
           </form>
         </div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -198,12 +225,17 @@
              src="{{ url_for('uploaded_file', filename=e.photo_filename) }}" alt="">
         {% endif %}
         <div class="admin-card-actions">
+          {% if current_user and current_user.role in ('admin', 'superuser') %}
           <button class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">✎ Bewerken</button>
+          {% endif %}
+          {% if current_user and current_user.role == 'admin' %}
           <form method="POST" action="{{ url_for('admin_delete', eid=e.id) }}" style="display:inline"
                 onsubmit="return confirm('Bijdrage verwijderen?')">
             <button class="btn-reject btn--small">✕ Verwijderen</button>
           </form>
+          {% endif %}
         </div>
+        {% if current_user and current_user.role in ('admin', 'superuser') %}
         <div class="admin-edit-form" id="edit-{{ e.id }}" hidden>
           <form method="POST" action="{{ url_for('admin_edit_approved', eid=e.id) }}"
                 enctype="multipart/form-data">
@@ -261,6 +293,7 @@
             <button type="button" class="btn-outline btn--small" onclick="toggleEdit({{ e.id }})">Annuleren</button>
           </form>
         </div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -286,6 +319,7 @@
           {% endif %}
         </div>
         <div class="profile-card-name">{{ m.name }}</div>
+        {% if current_user and current_user.role in ('admin', 'superuser') %}
         <form method="POST" action="{{ url_for('admin_upload_profile', person_name=m.name) }}"
               enctype="multipart/form-data" style="display:flex;flex-direction:column;align-items:center;gap:.4rem">
           <input type="file" name="photo" accept="image/*" class="profile-file-input"
@@ -293,7 +327,8 @@
           <button type="button" class="btn-outline btn--small"
                   onclick="document.getElementById('pf-{{ loop.index }}').click()">📷 Uploaden</button>
         </form>
-        {% if member_photos.get(m.name) %}
+        {% endif %}
+        {% if current_user and current_user.role == 'admin' and member_photos.get(m.name) %}
         <form method="POST" action="{{ url_for('admin_delete_profile', person_name=m.name) }}">
           <button class="btn-reject btn--small">✕ Verwijderen</button>
         </form>
@@ -302,6 +337,97 @@
       {% endfor %}
     </div>
   </div>
+
+  <!-- ── Tab: Gebruikers (admin only) ──────────────────── -->
+  {% if current_user and current_user.role == 'admin' %}
+  <div class="admin-panel" id="tab-users" hidden>
+    <h2 class="admin-section-title">Gebruikers beheren</h2>
+
+    <form class="admin-form admin-form--compact" method="POST"
+          action="{{ url_for('admin_users_add') }}">
+      <div class="users-add-row">
+        <div class="field">
+          <label>E-mailadres <span class="required">*</span></label>
+          <input type="email" name="email" required placeholder="naam@voorbeeld.nl">
+        </div>
+        <div class="field">
+          <label>Naam</label>
+          <input type="text" name="name" placeholder="Volledige naam">
+        </div>
+        <div class="field">
+          <label>Rol</label>
+          <select name="role">
+            <option value="user">Lezer</option>
+            <option value="superuser">Redacteur</option>
+            <option value="admin">Beheerder</option>
+          </select>
+        </div>
+        <div class="field field--action">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn-approve">Toevoegen</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="users-table-wrap">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Naam</th>
+            <th>E-mailadres</th>
+            <th>Rol</th>
+            <th>Toegevoegd</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr class="{% if u.id == current_user.id %}users-table-self{% endif %}">
+            <td>
+              <form method="POST" action="{{ url_for('admin_users_edit', uid=u.id) }}"
+                    class="users-inline-form" id="user-form-{{ u.id }}">
+                <input type="text" name="name" value="{{ u.name }}"
+                       placeholder="Naam" class="users-input">
+                <input type="hidden" name="role" value="{{ u.role }}" class="users-role-hidden">
+              </form>
+            </td>
+            <td class="users-email">{{ u.email }}</td>
+            <td>
+              <select class="users-role-select" data-uid="{{ u.id }}"
+                      onchange="updateRole({{ u.id }}, this.value)">
+                <option value="user"      {% if u.role == 'user' %}selected{% endif %}>Lezer</option>
+                <option value="superuser" {% if u.role == 'superuser' %}selected{% endif %}>Redacteur</option>
+                <option value="admin"     {% if u.role == 'admin' %}selected{% endif %}>Beheerder</option>
+              </select>
+            </td>
+            <td class="users-date">{{ u.created_at[:10] }}</td>
+            <td class="users-actions">
+              <button class="btn-approve btn--small"
+                      onclick="document.getElementById('user-form-{{ u.id }}').submit()">
+                Opslaan
+              </button>
+              {% if u.id != current_user.id %}
+              <form method="POST" action="{{ url_for('admin_users_delete', uid=u.id) }}"
+                    style="display:inline"
+                    onsubmit="return confirm('Gebruiker {{ u.email }} verwijderen?')">
+                <button class="btn-reject btn--small">✕</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="users-legend">
+      <strong>Rollen:</strong>
+      <span class="admin-role-badge admin-role-badge--admin">Beheerder</span> — alles inclusief verwijderen en gebruikersbeheer &nbsp;·&nbsp;
+      <span class="admin-role-badge admin-role-badge--superuser">Redacteur</span> — toevoegen en bewerken, geen verwijderen &nbsp;·&nbsp;
+      <span class="admin-role-badge admin-role-badge--user">Lezer</span> — alleen bekijken
+    </div>
+  </div>
+  {% endif %}
 
 </div>
 {% endblock %}
@@ -317,7 +443,6 @@ function activateTab(name) {
   if (panel) panel.hidden = false;
 }
 
-// Activate tab from URL param (e.g. ?tab=primores after save)
 const urlTab = new URLSearchParams(location.search).get('tab');
 if (urlTab) activateTab(urlTab);
 
@@ -328,6 +453,11 @@ document.querySelectorAll('.admin-tab').forEach(btn => {
 function toggleEdit(id) {
   const el = document.getElementById('edit-' + id);
   el.hidden = !el.hidden;
+}
+
+function updateRole(uid, role) {
+  const form = document.getElementById('user-form-' + uid);
+  if (form) form.querySelector('.users-role-hidden').value = role;
 }
 
 async function geocode(nameId, latId, lngId) {
@@ -350,4 +480,92 @@ async function geocode(nameId, latId, lngId) {
   }
 }
 </script>
+
+<style>
+.admin-topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.admin-user-info {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.admin-user-name {
+  font-size: .9rem;
+  color: var(--text-light, #888);
+}
+.admin-role-badge {
+  font-size: .72rem;
+  font-weight: 600;
+  padding: .2rem .55rem;
+  border-radius: 20px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.admin-role-badge--admin     { background: #fef3c7; color: #92400e; }
+.admin-role-badge--superuser { background: #dbeafe; color: #1e40af; }
+.admin-role-badge--user      { background: #f3f4f6; color: #6b7280; }
+
+/* Users tab */
+.users-add-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.users-add-row .field { margin-bottom: 0; flex: 1; min-width: 150px; }
+.users-add-row .field--action { flex: 0 0 auto; }
+.admin-form--compact { margin-bottom: 2rem; }
+
+.users-table-wrap { overflow-x: auto; }
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+.users-table th {
+  text-align: left;
+  padding: .6rem .75rem;
+  border-bottom: 2px solid var(--border, #e5e7eb);
+  color: var(--text-light, #888);
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.users-table td {
+  padding: .6rem .75rem;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  vertical-align: middle;
+}
+.users-table-self td { background: #fffbeb; }
+.users-email { color: var(--text-light, #888); font-size: .85rem; }
+.users-date  { color: var(--text-light, #888); font-size: .82rem; white-space: nowrap; }
+.users-actions { white-space: nowrap; }
+.users-input {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 4px;
+  padding: .3rem .5rem;
+  font-size: .88rem;
+  width: 100%;
+  min-width: 120px;
+}
+.users-role-select {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 4px;
+  padding: .3rem .5rem;
+  font-size: .88rem;
+}
+.users-inline-form { display: flex; }
+.users-legend {
+  margin-top: 1.5rem;
+  font-size: .82rem;
+  color: var(--text-light, #888);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+</style>
 {% endblock %}
