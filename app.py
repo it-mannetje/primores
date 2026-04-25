@@ -214,7 +214,6 @@ def send_magic_link(to_email, magic_url):
     mail_password = os.environ.get('MAIL_PASSWORD', '')
     mail_from     = os.environ.get('MAIL_FROM') or mail_username
     use_tls       = os.environ.get('MAIL_USE_TLS', '1') == '1'
-    app.logger.warning('MAIL config: server=%s port=%s user=%s', mail_server, mail_port, mail_username)
 
     msg = EmailMessage()
     msg['Subject'] = 'Inloglink Canon Primores'
