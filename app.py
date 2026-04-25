@@ -258,7 +258,7 @@ def send_magic_link(to_email, magic_url):
                 server.starttls()
             if mail_username:
                 server.login(mail_username, mail_password)
-            server.sendmail(mail_from, to_email, msg.as_string())
+            server.send_message(msg)
         return True
     except Exception as exc:
         app.logger.error('Failed to send magic link to %s: %s', to_email, exc)
