@@ -230,8 +230,12 @@
     card.setAttribute('aria-label', ev.title);
 
     const dateStr = formatShortDate(ev.date_year, ev.date_month, ev.date_day);
+    const avatarInner = ev.avatar_url
+      ? `<img src="${ev.avatar_url}" alt="${ev.person_name}">`
+      : ev.person_name[0];
 
     card.innerHTML = `
+      <div class="tl-corner-avatar" style="--mc:${ev.color}">${avatarInner}</div>
       <div class="tl-event-date">${dateStr}</div>
       ${ev.photo_url ? `<img class="tl-event-img" src="${ev.photo_url}" alt="" loading="lazy">` : ''}
       <div class="tl-event-title">${ev.title}</div>

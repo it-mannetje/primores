@@ -305,6 +305,7 @@ def api_events():
         'ORDER BY date_year, COALESCE(date_month,0), COALESCE(date_day,0)'
     ).fetchall()
     conn.close()
+    member_photos = get_member_photos()
     result = []
     for e in events:
         color = '#B91C1C'
@@ -312,6 +313,7 @@ def api_events():
             m = member_by_name(e['person_name'])
             if m:
                 color = m['color']
+        avatar_fn = member_photos.get(e['person_name']) if e['person_name'] else None
         result.append({
             'id': e['id'],
             'person_name': e['person_name'] or 'Primores',
@@ -322,6 +324,7 @@ def api_events():
             'title': e['title'],
             'description': e['description'] or '',
             'photo_url': url_for('uploaded_file', filename=e['photo_filename']) if e['photo_filename'] else None,
+            'avatar_url': url_for('uploaded_file', filename=avatar_fn) if avatar_fn else None,
             'color': color,
             'location_name': e['location_name'],
             'location_lat':  e['location_lat'],
