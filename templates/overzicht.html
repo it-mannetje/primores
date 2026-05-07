@@ -34,6 +34,12 @@
     {% endif %}
     <article class="event-card-big" style="--mc: {{ color }}"
              onclick="openEventModal({{ e.id }})">
+      {% set pname = e.person_name or 'Primores' %}
+      <div class="ecb-corner-avatar" style="--mc: {{ color }}">
+        {% if e.person_name and member_photos.get(e.person_name) %}
+        <img src="{{ member_photos[e.person_name] }}" alt="{{ e.person_name }}">
+        {% else %}{{ pname[0] }}{% endif %}
+      </div>
       {% if e.photo_filename %}
       <div class="ecb-photo">
         <img src="{{ url_for('uploaded_file', filename=e.photo_filename) }}"
@@ -43,7 +49,6 @@
       <div class="ecb-body">
         <div class="ecb-meta">
           <span class="ecb-person" style="color: {{ color }}">
-            {% set pname = e.person_name or 'Primores' %}
             <span class="card-avatar" style="--mc: {{ color }}">
               {% if e.person_name and member_photos.get(e.person_name) %}
               <img src="{{ member_photos[e.person_name] }}" alt="">
