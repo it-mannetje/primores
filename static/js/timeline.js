@@ -193,18 +193,22 @@
       events.forEach(ev => laneEl.appendChild(makeCard(ev, false)));
 
       // Sync label height + visibility
-      const lblEl = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
-      if (lblEl) {
-        lblEl.style.height  = h + 'px';
-        lblEl.style.display = hidden ? 'none' : '';
+      if (tlLabels) {
+        const lblEl = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
+        if (lblEl) {
+          lblEl.style.height  = h + 'px';
+          lblEl.style.display = hidden ? 'none' : '';
+        }
       }
     });
 
     // Sync Primores label height + visibility
-    const priLbl = tlLabels.querySelector('.tl-label--primores');
-    if (priLbl) {
-      priLbl.style.height  = primH + 'px';
-      priLbl.style.display = primoresHidden ? 'none' : '';
+    if (tlLabels) {
+      const priLbl = tlLabels.querySelector('.tl-label--primores');
+      if (priLbl) {
+        priLbl.style.height  = primH + 'px';
+        priLbl.style.display = primoresHidden ? 'none' : '';
+      }
     }
 
     // Sync scroll
@@ -360,11 +364,11 @@
   // ── Scroll sync (labels ↔ timeline) ───────────────────
 
   function syncLabelScroll() {
-    tlLabels.scrollTop = tlScroll.scrollTop;
+    if (tlLabels) tlLabels.scrollTop = tlScroll.scrollTop;
   }
 
   tlScroll.addEventListener('scroll', () => {
-    tlLabels.scrollTop = tlScroll.scrollTop;
+    if (tlLabels) tlLabels.scrollTop = tlScroll.scrollTop;
     updateScrubberViewport();
     clearTimeout(reorderTimer);
     reorderTimer = setTimeout(reorderLanes, 300);
@@ -456,7 +460,7 @@
       const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
       const lblEl  = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
       if (laneEl) tlCanvas.appendChild(laneEl);
-      if (lblEl)  tlLabels.appendChild(lblEl);
+      if (tlLabels && lblEl) tlLabels.appendChild(lblEl);
     });
   }
 

@@ -40,25 +40,6 @@
   <div class="tl-scrubber" id="tlScrubber" title="Klik om naar dat jaar te navigeren"></div>
 
   <div class="tl-layout" id="tlLayout">
-    <!-- Sticky lane labels (left column) -->
-    <div class="tl-labels" id="tlLabels">
-      <div class="tl-label tl-label--primores">
-        <div class="tl-label-avatar">P</div>
-        <div class="tl-label-inner">Primores</div>
-      </div>
-      {% for m in members %}
-      <div class="tl-label" data-person="{{ m.name }}" style="--mc: {{ m.color }}">
-        <div class="tl-label-avatar">
-          {% if member_photos.get(m.name) %}
-          <img src="{{ member_photos[m.name] }}" alt="{{ m.name }}">
-          {% else %}
-          {{ m.name[0] }}
-          {% endif %}
-        </div>
-        <div class="tl-label-inner">{{ m.name }}</div>
-      </div>
-      {% endfor %}
-    </div>
 
     <!-- Scrollable timeline area -->
     <div class="tl-scroll" id="tlScroll">
