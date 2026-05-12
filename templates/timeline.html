@@ -49,9 +49,7 @@
       <!-- Canvas: lanes rendered by JS -->
       <div class="tl-canvas" id="tlCanvas">
         <div class="tl-lane tl-lane--primores" id="lane-Primores"></div>
-        {% for m in members %}
-        <div class="tl-lane" id="lane-{{ m.name | replace(' ', '_') }}" style="--mc: {{ m.color }}"></div>
-        {% endfor %}
+        <div class="tl-lane" id="lane-flat"></div>
       </div>
     </div>
   </div>

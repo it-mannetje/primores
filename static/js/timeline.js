@@ -140,78 +140,44 @@
   function render() {
     const w = totalWidth();
 
-    // Group events
-    const primoresEvs = allEvents
-      .filter(e => e.is_primores)
-      .sort(sortByDate);
-    const byPerson = {};
-    MEMBERS.forEach(m => byPerson[m.name] = []);
-    allEvents.filter(e => !e.is_primores).forEach(e => {
-      if (byPerson[e.person_name]) byPerson[e.person_name].push(e);
-    });
-
+    // Primores events
+    const primoresEvs = allEvents.filter(e => e.is_primores).sort(sortByDate);
     assignRows(primoresEvs);
-    MEMBERS.forEach(m => assignRows(byPerson[m.name]));
 
-    // Compute total canvas height
-    let totalH = laneHeight(primoresEvs, LANE_H_P, ROW_H);
-    MEMBERS.forEach(m => {
-      totalH += laneHeight(byPerson[m.name], LANE_H, ROW_H);
-    });
+    // All person events visible under current filter, laid out as one flat pool
+    const personEvs = allEvents
+      .filter(e => !e.is_primores && membersWithEvents.has(e.person_name))
+      .filter(e => visiblePersons.has('all') || visiblePersons.has(e.person_name))
+      .sort(sortByDate);
+    assignRows(personEvs);
+
+    const primH   = laneHeight(primoresEvs, LANE_H_P, ROW_H);
+    const personH = laneHeight(personEvs, LANE_H, ROW_H);
+    const primoresHidden = !visiblePersons.has('all') && !visiblePersons.has('primores');
+    const totalH  = (primoresHidden ? 0 : primH) + (personEvs.length ? personH : 0);
 
     tlCanvas.style.width  = w + 'px';
-    tlCanvas.style.height = totalH + 'px';
+    tlCanvas.style.height = Math.max(totalH, LANE_H) + 'px';
 
     buildRuler();
-    buildGridlines(totalH);
+    buildGridlines(Math.max(totalH, LANE_H));
 
     // Render Primores lane
     const primLane = document.getElementById('lane-Primores');
-    const primH = laneHeight(primoresEvs, LANE_H_P, ROW_H);
-    primLane.style.width  = w + 'px';
-    primLane.style.height = primH + 'px';
+    primLane.style.width   = w + 'px';
+    primLane.style.height  = primH + 'px';
+    primLane.style.display = primoresHidden ? 'none' : '';
     primLane.innerHTML = '';
     primoresEvs.forEach(ev => primLane.appendChild(makeCard(ev, true)));
-    const primoresHidden = !visiblePersons.has('all') && !visiblePersons.has('primores');
-    primLane.style.display = primoresHidden ? 'none' : '';
 
-    // Render person lanes
-    MEMBERS.forEach((m, i) => {
-      const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
-      const events = byPerson[m.name];
-      const h = laneHeight(events, LANE_H, ROW_H);
+    // Render all person events in one flat lane
+    const flatLane = document.getElementById('lane-flat');
+    flatLane.style.width   = w + 'px';
+    flatLane.style.height  = personH + 'px';
+    flatLane.style.display = personEvs.length ? '' : 'none';
+    flatLane.innerHTML = '';
+    personEvs.forEach(ev => flatLane.appendChild(makeCard(ev, false)));
 
-      laneEl.style.width  = w + 'px';
-      laneEl.style.height = h + 'px';
-      laneEl.innerHTML    = '';
-
-      const filteredOut = !visiblePersons.has('all') && !visiblePersons.has(m.name);
-      const noEvents   = !membersWithEvents.has(m.name);
-      const hidden     = filteredOut || noEvents;
-      laneEl.style.display = hidden ? 'none' : '';
-
-      events.forEach(ev => laneEl.appendChild(makeCard(ev, false)));
-
-      // Sync label height + visibility
-      if (tlLabels) {
-        const lblEl = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
-        if (lblEl) {
-          lblEl.style.height  = h + 'px';
-          lblEl.style.display = hidden ? 'none' : '';
-        }
-      }
-    });
-
-    // Sync Primores label height + visibility
-    if (tlLabels) {
-      const priLbl = tlLabels.querySelector('.tl-label--primores');
-      if (priLbl) {
-        priLbl.style.height  = primH + 'px';
-        priLbl.style.display = primoresHidden ? 'none' : '';
-      }
-    }
-
-    // Sync scroll
     syncLabelScroll();
     buildScrubber();
   }
@@ -370,8 +336,6 @@
   tlScroll.addEventListener('scroll', () => {
     if (tlLabels) tlLabels.scrollTop = tlScroll.scrollTop;
     updateScrubberViewport();
-    clearTimeout(reorderTimer);
-    reorderTimer = setTimeout(reorderLanes, 300);
   });
 
   // ── Zoom ──────────────────────────────────────────────
@@ -432,42 +396,6 @@
     tlScroll.scrollLeft = Math.max(0, x - tlScroll.clientWidth / 2);
   }
 
-  // ── Lane reordering by visible period ────────────────
-
-  let reorderTimer = null;
-
-  function reorderLanes() {
-    const viewStart = tlScroll.scrollLeft;
-    const viewEnd   = viewStart + tlScroll.clientWidth;
-
-    const withEvents    = [];
-    const withoutEvents = [];
-
-    MEMBERS.forEach(m => {
-      if (!membersWithEvents.has(m.name)) return; // no events at all — skip
-      const filteredOut = !visiblePersons.has('all') && !visiblePersons.has(m.name);
-      if (filteredOut) return; // hidden by filter — skip
-
-      const hasInView = allEvents.some(ev =>
-        !ev.is_primores &&
-        ev.person_name === m.name &&
-        ev._x !== undefined &&
-        ev._x + CARD_W >= viewStart &&
-        ev._x <= viewEnd
-      );
-      (hasInView ? withEvents : withoutEvents).push(m);
-    });
-
-    // Lanes with events in view: show at top; others: hide
-    withEvents.forEach(m => {
-      const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
-      if (laneEl) { laneEl.style.display = ''; tlCanvas.appendChild(laneEl); }
-    });
-    withoutEvents.forEach(m => {
-      const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
-      if (laneEl) { laneEl.style.display = 'none'; tlCanvas.appendChild(laneEl); }
-    });
-  }
 
 
   // ── Load & init ───────────────────────────────────────
@@ -489,7 +417,6 @@
         ? Math.min(...allEvents.map(e => e.date_year))
         : 1990;
       scrollToYear(Math.max(minYear - 2, START_YEAR));
-      reorderLanes();
     })
     .catch(err => console.error('Kon evenementen niet laden:', err));
 
