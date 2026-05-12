@@ -8,6 +8,10 @@
     <p>Kies jouw naam en voeg de momenten toe die jij wil bewaren voor de Canon van de Primores.</p>
   </div>
   <div class="member-grid">
+    <a href="{{ url_for('submit_primores') }}" class="member-tile member-tile--primores" style="--mc: #B91C1C">
+      <div class="member-tile-avatar" style="font-style:italic;font-family:var(--serif)">P</div>
+      <div class="member-tile-name">Primores</div>
+    </a>
     {% for m in members %}
     <a href="{{ url_for('submit', person_name=m.name) }}" class="member-tile" style="--mc: {{ m.color }}">
       <div class="member-tile-avatar">

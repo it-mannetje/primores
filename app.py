@@ -344,6 +344,47 @@ def inzenden():
     return render_template('inzenden.html', members=MEMBERS)
 
 
+@app.route('/inzenden/primores', methods=['GET', 'POST'])
+def submit_primores():
+    primores_member = {'name': 'Primores', 'color': '#B91C1C'}
+    if request.method == 'POST':
+        date_year  = request.form.get('date_year', type=int)
+        date_month = request.form.get('date_month', type=int) or None
+        date_day   = request.form.get('date_day', type=int) or None
+        title         = request.form.get('title', '').strip()
+        description   = request.form.get('description', '').strip()
+        location_name = request.form.get('location_name', '').strip() or None
+        location_lat  = request.form.get('location_lat', type=float)
+        location_lng  = request.form.get('location_lng', type=float)
+        url           = request.form.get('url', '').strip() or None
+
+        errors = []
+        if not date_year or not (1940 <= date_year <= 2030):
+            errors.append('Voer een geldig jaar in (1940–2030).')
+        if not title:
+            errors.append('Een titel is verplicht.')
+        if errors:
+            for e in errors:
+                flash(e, 'error')
+            return render_template('submit.html', member=primores_member, members=MEMBERS)
+
+        photo_filename = save_photo('photo')
+        conn = get_db()
+        conn.execute(
+            'INSERT INTO events (person_name, date_year, date_month, date_day, title, description, '
+            'photo_filename, approved, is_primores, location_name, location_lat, location_lng, url) '
+            'VALUES (?,?,?,?,?,?,?,1,1,?,?,?,?)',
+            (None, date_year, date_month, date_day, title, description, photo_filename,
+             location_name, location_lat, location_lng, url)
+        )
+        conn.commit()
+        conn.close()
+        flash('Primores evenement toegevoegd!', 'success')
+        return redirect(url_for('submit_primores'))
+
+    return render_template('submit.html', member=primores_member, members=MEMBERS)
+
+
 @app.route('/inzenden/<person_name>', methods=['GET', 'POST'])
 def submit(person_name):
     member = next((m for m in MEMBERS if m['name'] == person_name), None)
@@ -586,6 +627,7 @@ def admin_edit_approved(eid):
     location_lat  = request.form.get('location_lat', type=float)
     location_lng  = request.form.get('location_lng', type=float)
     url           = request.form.get('url', '').strip() or None
+    assigned_to   = request.form.get('assigned_to', '').strip()
 
     photo_filename = old['photo_filename'] if old else None
     new_photo = save_photo('photo')
@@ -593,12 +635,27 @@ def admin_edit_approved(eid):
         delete_photo(photo_filename)
         photo_filename = new_photo
 
+    if assigned_to == 'primores':
+        new_person_name = None
+        new_is_primores = 1
+        new_approved    = 1
+    elif assigned_to and member_by_name(assigned_to):
+        new_person_name = assigned_to
+        new_is_primores = 0
+        new_approved    = 1
+    else:
+        new_person_name = old['person_name'] if old else None
+        new_is_primores = old['is_primores'] if old else 0
+        new_approved    = old['approved'] if old else 1
+
     conn = get_db()
     conn.execute(
         'UPDATE events SET date_year=?, date_month=?, date_day=?, title=?, description=?, '
-        'photo_filename=?, location_name=?, location_lat=?, location_lng=?, url=? WHERE id=?',
+        'photo_filename=?, location_name=?, location_lat=?, location_lng=?, url=?, '
+        'person_name=?, is_primores=?, approved=? WHERE id=?',
         (date_year, date_month, date_day, title, description, photo_filename,
-         location_name, location_lat, location_lng, url, eid)
+         location_name, location_lat, location_lng, url,
+         new_person_name, new_is_primores, new_approved, eid)
     )
     conn.commit()
     conn.close()
@@ -628,6 +685,7 @@ def admin_edit_primores(eid):
     location_lat  = request.form.get('location_lat', type=float)
     location_lng  = request.form.get('location_lng', type=float)
     url           = request.form.get('url', '').strip() or None
+    assigned_to   = request.form.get('assigned_to', '').strip()
 
     photo_filename = old['photo_filename'] if old else None
     new_photo = save_photo('photo')
@@ -635,12 +693,23 @@ def admin_edit_primores(eid):
         delete_photo(photo_filename)
         photo_filename = new_photo
 
+    if assigned_to and assigned_to != 'primores' and member_by_name(assigned_to):
+        new_person_name = assigned_to
+        new_is_primores = 0
+        new_approved    = 1
+    else:
+        new_person_name = None
+        new_is_primores = 1
+        new_approved    = 1
+
     conn = get_db()
     conn.execute(
         'UPDATE events SET date_year=?, date_month=?, date_day=?, title=?, description=?, '
-        'photo_filename=?, location_name=?, location_lat=?, location_lng=?, url=? WHERE id=?',
+        'photo_filename=?, location_name=?, location_lat=?, location_lng=?, url=?, '
+        'person_name=?, is_primores=?, approved=? WHERE id=?',
         (date_year, date_month, date_day, title, description, photo_filename,
-         location_name, location_lat, location_lng, url, eid)
+         location_name, location_lat, location_lng, url,
+         new_person_name, new_is_primores, new_approved, eid)
     )
     conn.commit()
     conn.close()

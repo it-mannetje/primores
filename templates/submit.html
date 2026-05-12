@@ -4,17 +4,20 @@
 {% block content %}
 <div class="submit-page">
   <div class="submit-header" style="--mc: {{ member.color }}">
-    <div class="submit-avatar">
+    <div class="submit-avatar" {% if member.name == 'Primores' %}style="font-style:italic;font-family:var(--serif)"{% endif %}>
       {% if member_photos.get(member.name) %}<img src="{{ member_photos[member.name] }}" alt="{{ member.name }}">
       {% else %}{{ member.name[0] }}{% endif %}
     </div>
     <div>
       <h1>{{ member.name }}</h1>
-      <p>Voeg een hoogtepunt toe aan jouw tijdlijn</p>
+      <p>{% if member.name == 'Primores' %}Voeg een algemeen Primores-moment toe{% else %}Voeg een hoogtepunt toe aan jouw tijdlijn{% endif %}</p>
     </div>
   </div>
 
   <div class="submit-nav">
+    <a href="{{ url_for('submit_primores') }}"
+       class="submit-nav-link {% if member.name == 'Primores' %}active{% endif %}"
+       style="--mc: #B91C1C; font-style: italic">Primores</a>
     {% for m in members %}
     <a href="{{ url_for('submit', person_name=m.name) }}"
        class="submit-nav-link {% if m.name == member.name %}active{% endif %}"

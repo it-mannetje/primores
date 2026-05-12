@@ -139,6 +139,15 @@
         <div class="admin-edit-form" id="edit-{{ e.id }}" hidden>
           <form method="POST" action="{{ url_for('admin_edit_primores', eid=e.id) }}"
                 enctype="multipart/form-data">
+            <div class="field">
+              <label>Toewijzen aan</label>
+              <select name="assigned_to">
+                <option value="primores" selected>Primores (algemeen)</option>
+                {% for m in members %}
+                <option value="{{ m.name }}">{{ m.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
             <div class="date-fields">
               <div class="field">
                 <label>Jaar</label>
@@ -239,6 +248,15 @@
         <div class="admin-edit-form" id="edit-{{ e.id }}" hidden>
           <form method="POST" action="{{ url_for('admin_edit_approved', eid=e.id) }}"
                 enctype="multipart/form-data">
+            <div class="field">
+              <label>Toewijzen aan</label>
+              <select name="assigned_to">
+                <option value="primores">Primores (algemeen)</option>
+                {% for m in members %}
+                <option value="{{ m.name }}" {% if e.person_name == m.name %}selected{% endif %}>{{ m.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
             <div class="date-fields">
               <div class="field">
                 <label>Jaar</label>
