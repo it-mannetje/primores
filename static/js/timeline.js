@@ -444,7 +444,10 @@
     const withoutEvents = [];
 
     MEMBERS.forEach(m => {
-      if (!membersWithEvents.has(m.name)) return; // totally hidden — skip
+      if (!membersWithEvents.has(m.name)) return; // no events at all — skip
+      const filteredOut = !visiblePersons.has('all') && !visiblePersons.has(m.name);
+      if (filteredOut) return; // hidden by filter — skip
+
       const hasInView = allEvents.some(ev =>
         !ev.is_primores &&
         ev.person_name === m.name &&
@@ -455,14 +458,14 @@
       (hasInView ? withEvents : withoutEvents).push(m);
     });
 
-    // MEMBERS is already alphabetical, so both arrays are already sorted
-    [...withEvents, ...withoutEvents].forEach(m => {
+    // Lanes with events in view: show at top; others: hide
+    withEvents.forEach(m => {
       const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
-      if (laneEl) tlCanvas.appendChild(laneEl);
-      if (tlLabels) {
-        const lblEl = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
-        if (lblEl) tlLabels.appendChild(lblEl);
-      }
+      if (laneEl) { laneEl.style.display = ''; tlCanvas.appendChild(laneEl); }
+    });
+    withoutEvents.forEach(m => {
+      const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
+      if (laneEl) { laneEl.style.display = 'none'; tlCanvas.appendChild(laneEl); }
     });
   }
 
