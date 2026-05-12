@@ -458,9 +458,11 @@
     // MEMBERS is already alphabetical, so both arrays are already sorted
     [...withEvents, ...withoutEvents].forEach(m => {
       const laneEl = document.getElementById('lane-' + m.name.replace(/ /g, '_'));
-      const lblEl  = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
       if (laneEl) tlCanvas.appendChild(laneEl);
-      if (tlLabels && lblEl) tlLabels.appendChild(lblEl);
+      if (tlLabels) {
+        const lblEl = tlLabels.querySelector(`.tl-label[data-person="${m.name}"]`);
+        if (lblEl) tlLabels.appendChild(lblEl);
+      }
     });
   }
 
