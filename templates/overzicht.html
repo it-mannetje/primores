@@ -107,7 +107,7 @@ function showModal(e) {
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-person" style="color:${e.color}">${e.person_name}</div>
     <h2 class="modal-title">${e.title}</h2>
-    <div class="modal-date">${dateStr}</div>
+    <div class="modal-date">${e.location_name ? `📍 ${e.location_name} &nbsp;·&nbsp; ` : ''}${dateStr}</div>
     ${e.photo_url ? `<img class="modal-photo" src="${e.photo_url}" alt="${e.title}">` : ''}
     ${e.description ? `<p class="modal-desc">${e.description.replace(/\n/g,'<br>')}</p>` : ''}
     ${e.url ? `<a class="modal-url" href="${e.url}" target="_blank" rel="noopener noreferrer">🔗 Meer informatie</a>` : ''}
